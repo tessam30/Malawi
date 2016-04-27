@@ -1,0 +1,763 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Users\t\Documents\Malawi\Log/01_shocks.txt
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}27 Apr 2016, 12:06:06
+{txt}
+{com}. 
+. * First merge geo + hh roster informationuse 
+. use "$wave2/HH_MOD_A_FILT.dta", clear
+{txt}
+{com}. merge 1:1 y2_hhid using"$wave2/HouseholdGeovariables_IHPS.dta", gen(hh_rost_geo)
+{res}
+{txt}{col 5}Result{col 38}# of obs.
+{col 5}{hline 41}
+{col 5}not matched{col 30}{res}               0
+{txt}{col 5}matched{col 30}{res}           4,000{txt}  (hh_rost_geo==3)
+{col 5}{hline 41}
+
+{com}. save "$pathout/geo_hh_roster.dta", replace
+{txt}file C:\Users\t\Documents\Malawi\Dataout/geo_hh_roster.dta saved
+
+{com}. clear
+{txt}
+{com}. 
+. use "$wave2/HH_MOD_U.dta" 
+{txt}
+{com}. 
+. * Excecute program to create macros with lists of numbers
+. include $pathdo/cnumlist.do
+{txt}
+{com}. /* -----------------------------------------------------------------------------
+> # Name:         cnumlist
+> # Purpose:      creates comma separated number lists, return `r(numlist)'
+> # Author:       n.j.cox@durham.ac.uk from Statalist
+> # copied from http://hsphsun3.harvard.edu/cgi-bin/lwgate/STATALIST/archives/statalist.0406/Subject/article-540.html
+> # Created:      2015/02/11
+> # Modified: 2015/02/11
+> #-------------------------------------------------------------------------------
+> */
+. 
+. * Input is a numlist in the form "num1/num2" or "41/82"
+. capture program drop cnumlist
+{txt}
+{com}. program cnumlist, rclass 
+{txt}  1{com}.          version 13.1
+{txt}  2{com}.          numlist `0'
+{txt}  3{com}.          local result "`r(numlist)'"
+{txt}  4{com}.          local result : subinstr local result " " ",", all
+{txt}  5{com}.          return local numlist "`result'"
+{txt}  6{com}. end
+{txt}
+{com}. {txt}
+{com}. 
+. * Tabulate top two shocks for creating shock variables
+. tab hh_u0a if inlist(hh_u02, 1, 2)
+
+                             {txt}SHOCK CODE {c |}      Freq.     Percent        Cum.
+{hline 40}{c +}{hline 35}
+                                DROUGHT {c |}{res}        419        5.82        5.82
+{txt}                                 FLOODS {c |}{res}        201        2.79        8.62
+{txt}                            EARTHQUAKES {c |}{res}          8        0.11        8.73
+{txt}UNUSUALLY HIGH LEVEL OF CROP PESTS OR D {c |}{res}         68        0.95        9.67
+{txt}UNUSUALLY HIGH LEVEL OF LIVESTOCK DISEA {c |}{res}         71        0.99       10.66
+{txt}UNUSUALLY LOW PRICES FORAGRICULTURAL OU {c |}{res}        256        3.56       14.22
+{txt}UNUSUALLY HIGH COSTS OFAGRICULTURAL INP {c |}{res}      1,809       25.15       39.37
+{txt}         UNUSUALLY HIGH PRICES FOR FOOD {c |}{res}      2,265       31.48       70.85
+{txt}END OF REGULAR ASSISTANCE/AID/ REMITTAN {c |}{res}        116        1.61       72.46
+{txt}REDUCTION IN THE EARNINGS FROM HOUSEHOL {c |}{res}         81        1.13       73.59
+{txt}HOUSEHOLD (NON-AGRICULTURAL) BUSINESS F {c |}{res}         57        0.79       74.38
+{txt}REDUCTION IN THE EARNINGS OF CURRENTLY  {c |}{res}         37        0.51       74.90
+{txt}LOSS OF EMPLOYMENT OF PREVIOUSL SALARIE {c |}{res}         78        1.08       75.98
+{txt}SERIOUS ILNESS OR ACCIDENT OF HOUSEHOLD {c |}{res}        408        5.67       81.65
+{txt}                 BIRTH IN THE HOUSEHOLD {c |}{res}         63        0.88       82.53
+{txt}              DEATH OF INCOME EARNER(S) {c |}{res}         91        1.26       83.79
+{txt}     DEATH OF OTHER HOUSEHOLD MEMBER(S) {c |}{res}        153        2.13       85.92
+{txt}                  BREAK-UP OF HOUSEHOLD {c |}{res}         90        1.25       87.17
+{txt}THEFT OF MONEY/VALUABLES/ASSETS/AGRICUL {c |}{res}        214        2.97       90.14
+{txt}                      CONFLICT/VIOLENCE {c |}{res}         78        1.08       91.23
+{txt}                        OTHER (SPECIFY) {c |}{res}         91        1.26       92.49
+{txt}                        IRREGULAR RAINS {c |}{res}        537        7.46       99.96
+{txt}                             LANDSLIDES {c |}{res}          3        0.04      100.00
+{txt}{hline 40}{c +}{hline 35}
+                                  Total {c |}{res}      7,194      100.00
+{txt}
+{com}. 
+. * Flag observations with a shock
+. g byte rptShock = hh_u01 == 1
+{txt}
+{com}. 
+. tab hh_u0a hh_u02 if rptShock == 1, mi
+
+                      {txt}{c |} Rank the three most significant shocks you
+                      {c |}                 experienced
+           SHOCK CODE {c |} MOST SEVE  SECOND MO  THIRD MOS          . {c |}     Total
+{hline 22}{c +}{hline 44}{c +}{hline 10}
+              DROUGHT {c |}{res}       286        133        178        374 {txt}{c |}{res}       971 
+{txt}               FLOODS {c |}{res}       112         89         61        178 {txt}{c |}{res}       440 
+{txt}          EARTHQUAKES {c |}{res}         1          7         12         82 {txt}{c |}{res}       102 
+{txt}UNUSUALLY HIGH LEVEL  {c |}{res}        18         50         67        426 {txt}{c |}{res}       561 
+{txt}UNUSUALLY HIGH LEVEL  {c |}{res}        20         51         83        483 {txt}{c |}{res}       637 
+{txt}UNUSUALLY LOW PRICES  {c |}{res}        95        161        209        732 {txt}{c |}{res}     1,197 
+{txt}UNUSUALLY HIGH COSTS  {c |}{res}       830        979        519        422 {txt}{c |}{res}     2,750 
+{txt}UNUSUALLY HIGH PRICES {c |}{res}     1,238      1,027        616        380 {txt}{c |}{res}     3,261 
+{txt}END OF REGULAR ASSIST {c |}{res}        38         78         91        227 {txt}{c |}{res}       434 
+{txt}REDUCTION IN THE EARN {c |}{res}        37         44         52        162 {txt}{c |}{res}       295 
+{txt}HOUSEHOLD (NON-AGRICU {c |}{res}        30         27         34        115 {txt}{c |}{res}       206 
+{txt}REDUCTION IN THE EARN {c |}{res}        22         15         12         49 {txt}{c |}{res}        98 
+{txt}LOSS OF EMPLOYMENT OF {c |}{res}        55         22         20         62 {txt}{c |}{res}       159 
+{txt}SERIOUS ILNESS OR ACC {c |}{res}       277        131         98        159 {txt}{c |}{res}       665 
+{txt}BIRTH IN THE HOUSEHOL {c |}{res}        37         26         42         86 {txt}{c |}{res}       191 
+{txt}DEATH OF INCOME EARNE {c |}{res}        71         20          7         49 {txt}{c |}{res}       147 
+{txt}DEATH OF OTHER HOUSEH {c |}{res}       124         29         28         64 {txt}{c |}{res}       245 
+{txt}BREAK-UP OF HOUSEHOLD {c |}{res}        62         28         27         46 {txt}{c |}{res}       163 
+{txt}THEFT OF MONEY/VALUAB {c |}{res}       124         90         79        148 {txt}{c |}{res}       441 
+{txt}    CONFLICT/VIOLENCE {c |}{res}        43         35         48        149 {txt}{c |}{res}       275 
+{txt}      OTHER (SPECIFY) {c |}{res}        72         19         15          9 {txt}{c |}{res}       115 
+{txt}      IRREGULAR RAINS {c |}{res}       226        311        440        733 {txt}{c |}{res}     1,710 
+{txt}           LANDSLIDES {c |}{res}         1          2          2         27 {txt}{c |}{res}        32 
+{txt}{hline 22}{c +}{hline 44}{c +}{hline 10}
+                Total {c |}{res}     3,819      3,374      2,740      5,162 {txt}{c |}{res}    15,095 
+
+{txt}
+{com}. la var rptShock "Household reported a shock"
+{txt}
+{com}. 
+. * Create lowercase labels for the graphs
+. g shock_des = strlower(hh_u0b)
+{txt}
+{com}. clonevar shock_code = hh_u0a
+{txt}
+{com}. 
+. clonevar shock_sev = hh_u02
+{txt}(82064 missing values generated)
+
+{com}. la def severity 1 "Most severe" 2 "2nd most severe" 3 "3rd most severe"
+{txt}
+{com}. la val shock_sev severity 
+{txt}
+{com}. 
+. * Gather shock codes and create shock category variables
+. * Create preliminary shock variables (first or 2nd most severe shock)
+. label list 
+{txt}severity:
+{res}           1 Most severe
+           2 2nd most severe
+           3 3rd most severe
+{txt}HH_A02:
+{res}           1 PANEL A
+           2 PANEL B
+{txt}stat:
+{res}           1 Panel A - 2 Visits
+           2 Panel B - 2 Visits
+           3 Panel A - Combined Visit
+           4 Panel B - Combined Visit
+           5 Panel A - Only Visit 1
+           6 Panel B - Only Visit 1
+           7 Household Refusal
+           8 Partial Refusal
+{txt}HH_U04C:
+{res}           1 RELIED ON OWN-SAVINGS
+           2 RECEIVED UNCONDITIONAL HELP FROM RELATIVES / FRIENDS
+           3 RECEIVED UNCONDITIONAL HELP FROM GOVERNMENT
+           4 RECEIVED UNCONDITIONAL HELP FROM NGO / RELIGIOUS INSTITUTION
+           5 CHANGED DIETARY PATTERNS INVOLUNTARILY
+           6 EMPLOYED HOUSEHOLD MEMBERS TOOK ON MORE EMPLOYMENT
+           7 ADULT HOUSEHOLD MEMBERS WHO WERE PREVIOUSLY NOT WORKING HAD TO FIND WORK
+           8 HOUSEHOLD MEMBERS MIGRATED
+           9 REDUCED EXPENDITURES ON HEALTH AND/OR EDUCATION
+          10 OBTAINED CREDIT
+          11 SOLD AGRICULTURAL ASSETS
+          12 SOLD DURABLE ASSETS
+          13 SOLD LAND/BUILDING
+          14 SOLD CROP STOCK
+          15 SOLD LIVESTOCK
+          16 INTENSIFY FISHING
+          17 SENT CHILDREN TO LIVE ELSEWHERE
+          18 ENGAGED IN SPIRITUAL EFFORTS - PRAYER, SACRIFICES, DIVINER CONSULTATIONS
+          19 DID NOT DO ANYTHING
+          20 OTHER (SPECIFY)
+{txt}HH_U04B:
+{res}           1 RELIED ON OWN-SAVINGS
+           2 RECEIVED UNCONDITIONAL HELP FROM RELATIVES / FRIENDS
+           3 RECEIVED UNCONDITIONAL HELP FROM GOVERNMENT
+           4 RECEIVED UNCONDITIONAL HELP FROM NGO / RELIGIOUS INSTITUTION
+           5 CHANGED DIETARY PATTERNS INVOLUNTARILY
+           6 EMPLOYED HOUSEHOLD MEMBERS TOOK ON MORE EMPLOYMENT
+           7 ADULT HOUSEHOLD MEMBERS WHO WERE PREVIOUSLY NOT WORKING HAD TO FIND WORK
+           8 HOUSEHOLD MEMBERS MIGRATED
+           9 REDUCED EXPENDITURES ON HEALTH AND/OR EDUCATION
+          10 OBTAINED CREDIT
+          11 SOLD AGRICULTURAL ASSETS
+          12 SOLD DURABLE ASSETS
+          13 SOLD LAND/BUILDING
+          14 SOLD CROP STOCK
+          15 SOLD LIVESTOCK
+          16 INTENSIFY FISHING
+          17 SENT CHILDREN TO LIVE ELSEWHERE
+          18 ENGAGED IN SPIRITUAL EFFORTS - PRAYER, SACRIFICES, DIVINER CONSULTATIONS
+          19 DID NOT DO ANYTHING
+          20 OTHER (SPECIFY)
+{txt}HH_U04A:
+{res}           1 RELIED ON OWN-SAVINGS
+           2 RECEIVED UNCONDITIONAL HELP FROM RELATIVES / FRIENDS
+           3 RECEIVED UNCONDITIONAL HELP FROM GOVERNMENT
+           4 RECEIVED UNCONDITIONAL HELP FROM NGO / RELIGIOUS INSTITUTION
+           5 CHANGED DIETARY PATTERNS INVOLUNTARILY
+           6 EMPLOYED HOUSEHOLD MEMBERS TOOK ON MORE EMPLOYMENT
+           7 ADULT HOUSEHOLD MEMBERS WHO WERE PREVIOUSLY NOT WORKING HAD TO FIND WORK
+           8 HOUSEHOLD MEMBERS MIGRATED
+           9 REDUCED EXPENDITURES ON HEALTH AND/OR EDUCATION
+          10 OBTAINED CREDIT
+          11 SOLD AGRICULTURAL ASSETS
+          12 SOLD DURABLE ASSETS
+          13 SOLD LAND/BUILDING
+          14 SOLD CROP STOCK
+          15 SOLD LIVESTOCK
+          16 INTENSIFY FISHING
+          17 SENT CHILDREN TO LIVE ELSEWHERE
+          18 ENGAGED IN SPIRITUAL EFFORTS - PRAYER, SACRIFICES, DIVINER CONSULTATIONS
+          19 DID NOT DO ANYTHING
+          20 OTHER (SPECIFY)
+{txt}HH_U03E:
+{res}           1 INCREASE
+           2 DECREASE
+           3 DID NOT CHANGE
+{txt}HH_U03D:
+{res}           1 INCREASE
+           2 DECREASE
+           3 DID NOT CHANGE
+{txt}HH_U03C:
+{res}           1 INCREASE
+           2 DECREASE
+           3 DID NOT CHANGE
+{txt}HH_U03B:
+{res}           1 INCREASE
+           2 DECREASE
+           3 DID NOT CHANGE
+{txt}HH_U03A:
+{res}           1 INCREASE
+           2 DECREASE
+           3 DID NOT CHANGE
+{txt}HH_U02:
+{res}           1 MOST SEVERE
+           2 SECOND MOST SEVERE
+           3 THIRD MOST SEVERE
+{txt}HH_U01:
+{res}           1 YES
+           2 NO
+{txt}HH_U0A:
+{res}         101 DROUGHT
+         102 FLOODS
+         103 EARTHQUAKES
+         104 UNUSUALLY HIGH LEVEL OF CROP PESTS OR DISEASE
+         105 UNUSUALLY HIGH LEVEL OF LIVESTOCK DISEASE
+         106 UNUSUALLY LOW PRICES FORAGRICULTURAL OUTPUT
+         107 UNUSUALLY HIGH COSTS OFAGRICULTURAL INPUTS
+         108 UNUSUALLY HIGH PRICES FOR FOOD
+         109 END OF REGULAR ASSISTANCE/AID/ REMITTANCES FROM OUTSIDE HOUSEHOLD
+         110 REDUCTION IN THE EARNINGS FROM HOUSEHOLD (NON-AGRICULTURAL) BUSINESS (NOT DUE TO ILLNESS OR ACCIDENT)
+         111 HOUSEHOLD (NON-AGRICULTURAL) BUSINESS FAILURE  (NOT DUE TO ILLNESS OR ACCIDENT)
+         112 REDUCTION IN THE EARNINGS OF CURRENTLY SALARIED HOUSEHOLD MEMBER(S) (NOT DUE TO ILLNESS OR ACCIDENT)
+         113 LOSS OF EMPLOYMENT OF PREVIOUSL SALARIED HOUSEHOLD MEMBER(S)(NOT DUE TO ILLNESS OR ACCIDENT)
+         114 SERIOUS ILNESS OR ACCIDENT OF HOUSEHOLD MEMBER(S)
+         115 BIRTH IN THE HOUSEHOLD
+         116 DEATH OF INCOME EARNER(S)
+         117 DEATH OF OTHER HOUSEHOLD MEMBER(S)
+         118 BREAK-UP OF HOUSEHOLD
+         119 THEFT OF MONEY/VALUABLES/ASSETS/AGRICULTURAL OUTPUT
+         120 CONFLICT/VIOLENCE
+         121 OTHER (SPECIFY)
+        1101 IRREGULAR RAINS
+        1102 LANDSLIDES
+{txt}
+{com}. 
+. /*       101 DROUGHT
+>          102 FLOODS
+>          103 EARTHQUAKES
+>          104 UNUSUALLY HIGH LEVEL OF CROP PESTS OR DISEASE
+>          105 UNUSUALLY HIGH LEVEL OF LIVESTOCK DISEASE
+>          106 UNUSUALLY LOW PRICES FORAGRICULTURAL OUTPUT
+>          107 UNUSUALLY HIGH COSTS OFAGRICULTURAL INPUTS
+>          108 UNUSUALLY HIGH PRICES FOR FOOD
+>          109 END OF REGULAR ASSISTANCE/AID/ REMITTANCES FROM OUTSIDE HOUSEHOLD
+>          110 REDUCTION IN THE EARNINGS FROM HOUSEHOLD (NON-AGRICULTURAL) BUSINESS (NOT DUE TO ILLNESS OR ACCIDENT)
+>          111 HOUSEHOLD (NON-AGRICULTURAL) BUSINESS FAILURE  (NOT DUE TO ILLNESS OR ACCIDENT)
+>          112 REDUCTION IN THE EARNINGS OF CURRENTLY SALARIED HOUSEHOLD MEMBER(S) (NOT DUE TO ILLNESS OR ACCIDENT)
+>          113 LOSS OF EMPLOYMENT OF PREVIOUSL SALARIED HOUSEHOLD MEMBER(S)(NOT DUE TO ILLNESS OR ACCIDENT)
+>          114 SERIOUS ILNESS OR ACCIDENT OF HOUSEHOLD MEMBER(S)
+>          115 BIRTH IN THE HOUSEHOLD
+>          116 DEATH OF INCOME EARNER(S)
+>          117 DEATH OF OTHER HOUSEHOLD MEMBER(S)
+>          118 BREAK-UP OF HOUSEHOLD
+>          119 THEFT OF MONEY/VALUABLES/ASSETS/AGRICULTURAL OUTPUT
+>          120 CONFLICT/VIOLENCE
+>          121 OTHER (SPECIFY)
+>         1101 IRREGULAR RAINS
+>         1102 LANDSLIDES
+> */
+. 
+. * Create new label set
+. lab def shockN 101 "drought" 102 "floods" 103 "earthquakes" 104 "crop pest/disease" /*
+> */ 105 "livstock disease" 106 "low ag output price" 107 "high ag input prices" 108 "high food price" /*
+> */ 109 "remittances/aid ends" 110 "non-ag earnings fall" 111 "non-ag biz failure" 112 "salary reduced" /*
+> */ 113 "unemployed" 114 "illness/injury" 115 "birth in hh" 116 "death of income earner" /*
+> */ 117 "other death" 118 "hh break-up" 119 "theft all forms" 120 "conflict/violence" 121 "other" /*
+> */ 1101 "irregular rains" 1101 "landslides"
+{txt}
+{com}. la val shock_code shockN
+{txt}
+{com}. 
+. /*ag            = other crop damage; input price increase; death of livestock
+> * conflit       = theft/robbery/violence
+> * disaster      = drought, flood, heavy rains, landslides, fire
+> * financial     = loss of non-farm job
+> * foodprice     = price rise of food item
+> * pricedown = price fall of food items
+> * health        = death of hh member; illness of hh member
+> * other         = loss of house; displacement; other */ 
+. 
+. cnumlist "101 1101 102 1102 103"
+{txt}
+{com}. local disaster `r(numlist)'
+{txt}
+{com}. cnumlist "104 105 106 107"
+{txt}
+{com}. local ag `r(numlist)'
+{txt}
+{com}. cnumlist "109 110, 111, 112, 113"
+{txt}
+{com}. local fin `r(numlist)'
+{txt}
+{com}. cnumlist "114 115 116 117"
+{txt}
+{com}. local health `r(numlist)'
+{txt}
+{com}. 
+. * Create scalars to set the range of severity that will be considered for flagging shocks
+. scalar s_min = 1
+{txt}
+{com}. scalar s_max = .
+{txt}
+{com}. 
+. * Create standard categories for shocks using WB methods
+. g byte ag               = inlist(hh_u0a, 1`ag') & rptShock/*& inrange(shock_sev, s_min, s_max)*/
+{txt}
+{com}. g byte conflict = inlist(hh_u0a, 119, 120) & rptShock/*& inrange(shock_sev, s_min, s_max)*/
+{txt}
+{com}. g byte disaster = inlist(hh_u0a, `disaster') & rptShock/*& inrange(shock_sev, s_min, s_max)*/
+{txt}
+{com}. g byte financial= inlist(hh_u0a, `fin') & rptShock/*& inrange(shock_sev, s_min, s_max)*/
+{txt}
+{com}. g byte health   = inlist(hh_u0a, `health') & rptShock/*& inrange(shock_sev, s_min, s_max)*/
+{txt}
+{com}. g byte other    = inlist(hh_u0a, 118, 121) & rptShock/*& inrange(shock_sev, s_min, s_max)*/
+{txt}
+{com}. g byte foodprice= inlist(hh_u0a, 108) & rptShock/*& inrange(shock_sev, s_min, s_max)*/
+{txt}
+{com}. 
+. * Create a long variable that would identify groups of shocks, strictly for plotting
+. g shock_type = .
+{txt}(92000 missing values generated)
+
+{com}. replace shock_type = 0 if ag == 1
+{txt}(4584 real changes made)
+
+{com}. replace shock_type = 1 if conflict == 1
+{txt}(716 real changes made)
+
+{com}. replace shock_type = 2 if disaster == 1
+{txt}(3255 real changes made)
+
+{com}. replace shock_type = 3 if financial == 1
+{txt}(1192 real changes made)
+
+{com}. replace shock_type = 4 if health == 1
+{txt}(1248 real changes made)
+
+{com}. replace shock_type = 5 if other == 1
+{txt}(278 real changes made)
+
+{com}. replace shock_type = 6 if foodprice == 1
+{txt}(3261 real changes made)
+
+{com}. 
+. la def shocka 0 "Agricultural" 1 "Conflict" 2 "Disaster" 3 "Financial" /*
+> */ 4 "Health" 5 "Other" 6 "Food Prices"
+{txt}
+{com}. la val shock_type shocka
+{txt}
+{com}. tabsort shock_type shock_sev, mi
+
+             {txt}{c |} Rank the three most significant shocks you
+             {c |}                 experienced
+  shock_type {c |}         .  Most seve  2nd most   3rd most  {c |}     Total
+{hline 13}{c +}{hline 44}{c +}{hline 10}
+           . {c |}{res}    77,328         19         50         69 {txt}{c |}{res}    77,466 
+{txt}Agricultural {c |}{res}     1,637        945      1,191        811 {txt}{c |}{res}     4,584 
+{txt} Food Prices {c |}{res}       380      1,238      1,027        616 {txt}{c |}{res}     3,261 
+{txt}    Disaster {c |}{res}     1,394        626        542        693 {txt}{c |}{res}     3,255 
+{txt}      Health {c |}{res}       358        509        206        175 {txt}{c |}{res}     1,248 
+{txt}   Financial {c |}{res}       615        182        186        209 {txt}{c |}{res}     1,192 
+{txt}    Conflict {c |}{res}       297        167        125        127 {txt}{c |}{res}       716 
+{txt}       Other {c |}{res}        55        134         47         42 {txt}{c |}{res}       278 
+{txt}{hline 13}{c +}{hline 44}{c +}{hline 10}
+       Total {c |}{res}    82,064      3,820      3,374      2,742 {txt}{c |}{res}    92,000 
+
+{txt}
+{com}. 
+. * Create bar graph of shocks ranked by severity
+. graph hbar (count) if rptShock == 1, /*
+> */ over(shock_code, sort(1) descending label(labsize(vsmall))) /*
+> */ blabel(bar) scheme(s2mono) scale(.80) /*
+> */ by(shock_sev, missing cols(2) iscale(*.80) /*
+> */ title(High food and agricultural input prices are the most common and severe shocks/*
+> */, size(small) color("100 100 100"))) 
+{res}{txt}
+{com}. graph export "$pathgraph\Shocks.pdf", as(pdf) replace
+{txt}(file C:\Users\t\Documents\Malawi\Graph\Shocks.pdf written in PDF format)
+
+{com}. 
+. * Create bar graph of shocks ranked by severity
+. graph hbar (count) if rptShock == 1, /*
+> */ over(shock_type, sort(1) descending label(labsize(vsmall))) /*
+> */ blabel(bar) scheme(s2mono) scale(.8) /*
+> */ by(shock_sev, missing cols(2) iscale(*.8) title(Food price /*
+> */ and agricultural-based shocks are the most common and severe shock categories/*
+> */, size(small) color("100 100 100")))
+{res}{txt}
+{com}. graph export "$pathgraph\Shock_categories.pdf", as(pdf) replace
+{txt}(file C:\Users\t\Documents\Malawi\Graph\Shock_categories.pdf written in PDF format)
+
+{com}. 
+. merge m:m y2_hhid using "$pathout/geo_hh_roster.dta"
+{res}{txt}(label HH_A02 already defined)
+(label stat already defined)
+
+{col 5}Result{col 38}# of obs.
+{col 5}{hline 41}
+{col 5}not matched{col 30}{res}               0
+{txt}{col 5}matched{col 30}{res}          92,000{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. 
+. graph hbar (count) if rptShock == 1, /*
+> */ over(shock_type, sort(1) descending label(labsize(vsmall))) /*
+> */ blabel(bar) scheme(s2mono) scale(.8) /*
+> */ by(shock_sev region, missing cols(3) iscale(*.8) title(Food price /*
+> */ and agricultural-based shocks are the most common and severe shock categories/*
+> */, size(small) color("100 100 100")))
+{res}{txt}
+{com}. graph export "$pathgraph\Shock_categories_region.pdf", as(pdf) replace
+{txt}(file C:\Users\t\Documents\Malawi\Graph\Shock_categories_region.pdf written in PDF format)
+
+{com}. 
+. drop HHID-_merge
+{txt}
+{com}. 
+. * Total shocks reported by hh
+. egen tot_shocks = total(rptShock), by(y2_hhid)
+{txt}
+{com}. 
+. * Label shocks
+. la var ag "Agricultural"
+{txt}
+{com}. la var conflict "Conflict"
+{txt}
+{com}. la var disaster "Disaster"
+{txt}
+{com}. la var financial "Financial"
+{txt}
+{com}. la var health "Health"
+{txt}
+{com}. la var other "Other"
+{txt}
+{com}. la var foodprice "Price rise"
+{txt}
+{com}. 
+. * Collapse data to househld level and merge back with GIS info
+. ds (hh_* shock_des shock_code shock_type ), not
+{txt}{col 1}occ{col 15}qx_type{col 29}rptShock{col 43}ag{col 57}disaster{col 71}health{col 85}foodprice
+{col 1}y2_hhid{col 15}interview_~s{col 29}shock_sev{col 43}conflict{col 57}financial{col 71}other{col 85}tot_shocks
+
+{com}. keep `r(varlist)'
+{txt}
+{com}. 
+. ds (occ qx_type y2_hhid interview_status shock_sev), not
+{txt}{col 1}rptShock{col 13}ag{col 25}conflict{col 37}disaster{col 49}financial{col 61}health{col 73}other{col 85}foodprice{col 97}tot_shocks
+
+{com}. include "$pathdo/copylabels.do"
+{txt}
+{com}. /*-------------------------------------------------------------------------------
+> # Name:         copylabels
+> # Purpose:      Copies labels from a dataset; for use before collapse command
+> # Author:       Tim Essam, Ph.D.
+> # Created:      2014/11/06
+> # Copyright:    USAID GeoCenter
+> # Licence:      <Tim Essam Consulting/OakStream Systems, LLC>
+> # Ado(s):       none
+> #-------------------------------------------------------------------------------
+> */
+. 
+. foreach v of var * {c -(}
+{txt}  2{com}.         local l`v' : variable label `v'
+{txt}  3{com}.             if `"`l`v''"' == "" {c -(}
+{txt}  4{com}.             local l`v' "`v'"
+{txt}  5{com}.         {c )-}
+{txt}  6{com}. {c )-}
+{txt}
+{com}. {txt}
+{com}.         collapse (max) `r(varlist)', by(y2_hhid)
+{txt}
+{com}. include "$pathdo/attachlabels.do"
+{txt}
+{com}. /*-------------------------------------------------------------------------------
+> # Name:         attachlables
+> # Purpose:      Attaches labels to a dataset; for use after collapse command
+> # Author:       Tim Essam, Ph.D.
+> # Created:      2014/11/06
+> # Copyright:    USAID GeoCenter
+> # Licence:      <Tim Essam Consulting/OakStream Systems, LLC>
+> # Ado(s):       none
+> #-------------------------------------------------------------------------------
+> */
+. 
+. foreach v of var * {c -(}
+{txt}  2{com}.         label var `v' "`l`v''"
+{txt}  3{com}. {c )-}
+{txt}
+{com}. {txt}
+{com}. 
+. merge 1:1 y2_hhid using "$pathout/geo_hh_roster.dta", gen(geo_merge)
+{res}{txt}(label _merge already defined)
+(label sq1_lab already defined)
+(label ssa_lab already defined)
+(label srtm_lab already defined)
+(label fs_lab already defined)
+(label res already defined)
+(label reside1 already defined)
+(label STRATUM already defined)
+(label TRACKING already defined)
+(label dist already defined)
+(label reg already defined)
+(label HH_G09 already defined)
+(label HH_M00 already defined)
+(label HH_O00 already defined)
+(label HH_S01 already defined)
+(label HH_A46B already defined)
+(label HH_A43B already defined)
+(label HH_A40B already defined)
+(label HH_A37B_2 already defined)
+(label HH_A37A_2 already defined)
+(label HH_A33 already defined)
+(label HH_A30 already defined)
+(label HH_A29B already defined)
+(label HH_A26B already defined)
+(label HH_A23C_2 already defined)
+(label HH_A23B_2 already defined)
+(label HH_A23A_2 already defined)
+(label HH_A16 already defined)
+(label HH_A05 already defined)
+(label HH_A02 already defined)
+(label stat already defined)
+
+{col 5}Result{col 38}# of obs.
+{col 5}{hline 41}
+{col 5}not matched{col 30}{res}               0
+{txt}{col 5}matched{col 30}{res}           4,000{txt}  (geo_merge==3)
+{col 5}{hline 41}
+
+{com}. save "$pathout/shocks_wide.dta", replace
+{txt}(note: file C:\Users\t\Documents\Malawi\Dataout/shocks_wide.dta not found)
+file C:\Users\t\Documents\Malawi\Dataout/shocks_wide.dta saved
+
+{com}. 
+. foreach x of varlist ag conflict disaster financial health other foodprice tot_shocks {c -(}
+{txt}  2{com}.         ren `x' shk_`x'
+{txt}  3{com}.         {c )-}
+{res}{txt}
+{com}. *end
+. ren shk_ shocked
+{res}{err}shk_ ambiguous abbreviation
+{txt}{search r(111):r(111);}
+
+end of do-file
+
+{search r(111):r(111);}
+
+{com}. do "C:\Users\t\AppData\Local\Temp\STD03000000.tmp"
+{txt}
+{com}. reshape shk_@, i(y2_hhid) j(shock, string)
+{err}invalid syntax
+{p 4 4 2}
+In the {bf:reshape} command that you typed, you omitted the word {bf:wide} or {bf:long},
+or substituted some other word for it.  You should have typed
+
+        . {bf:reshape wide} {it:varlist}{bf:, ...}
+    or
+        . {bf:reshape long} {it:varlist}, ...
+
+{p 4 4 2}
+You might have omitted {it:varlist}, too.
+The basic syntax of {bf:reshape} is
+{p_end}
+
+{col 9} {it:long}                                {it:wide}
+{col 9}{c TLC}{hline 15}{c TRC}                   {c TLC}{hline 18}{c TRC}
+{col 9}{c |} {it:i   j}   a   b {c |}                   {c |} {it:i}   a1 a2  b1 b2 {c |}
+{col 9}{c |}{hline 15}{c |} <--- {bf:reshape} ---> {c |}{hline 18}{c |}
+{col 9}{c |} 1   1   1   2 {c |}                   {c |} 1   1   3   2  4 {c |}
+{col 9}{c |} 1   2   3   4 {c |}                   {c |} 2   5   7   6  8 {c |}
+{col 9}{c |} 2   1   5   6 {c |}                   {c BLC}{hline 18}{c BRC}
+{col 9}{c |} 2   2   7   8 {c |}
+{col 9}{c BLC}{hline 15}{c BRC}
+
+{col 9}long to wide: {bf:reshape wide a b, i(}{it:i}{bf:) j(}{it:j}{bf:)}    ({it:j} existing variable)
+{col 9}wide to long: {bf:reshape long a b, i(}{it:i}{bf:) j(}{it:j}{bf:)}    ({it:j}    new   variable)
+{txt}{search r(198):r(198);}
+
+end of do-file
+
+{search r(198):r(198);}
+
+{com}. do "C:\Users\t\AppData\Local\Temp\STD03000000.tmp"
+{txt}
+{com}. reshape long shk_@, i(y2_hhid) j(shock, string)
+{txt}(note: j = ag conflict disaster financial foodprice health other tot_shocks)
+
+Data{col 36}wide{col 43}->{col 48}long
+{hline 77}
+Number of obs.                 {res}    4000   {txt}->{res}   32000
+{txt}Number of variables            {res}     154   {txt}->{res}     148
+{txt}j variable (8 values)                     ->   {res}shock
+{txt}xij variables:
+ {res}shk_ag shk_conflict ... shk_tot_shocks   {txt}->   {res}shk_
+{txt}{hline 77}
+
+{com}. 
+{txt}end of do-file
+
+{com}. drop hh_a*
+
+. tab district
+
+    {txt}IHPS 2013 {c |}
+     District {c |}
+     Location {c |}      Freq.     Percent        Cum.
+{hline 14}{c +}{hline 35}
+      Chitipa {c |}{res}        984        3.08        3.08
+{txt}      Karonga {c |}{res}      1,272        3.98        7.05
+{txt}   Nkhata Bay {c |}{res}        872        2.73        9.78
+{txt}       Rumphi {c |}{res}        616        1.93       11.70
+{txt}       Mzimba {c |}{res}      1,864        5.83       17.53
+{txt}   Mzuzu City {c |}{res}      1,304        4.08       21.60
+{txt}      Kasungu {c |}{res}      1,120        3.50       25.10
+{txt}   Nkhotakota {c |}{res}        408        1.27       26.38
+{txt}      Ntchisi {c |}{res}        752        2.35       28.73
+{txt}         Dowa {c |}{res}      1,008        3.15       31.88
+{txt}       Salima {c |}{res}        496        1.55       33.42
+{txt}     Lilongwe {c |}{res}      2,368        7.40       40.82
+{txt}      Mchinji {c |}{res}        736        2.30       43.12
+{txt}        Dedza {c |}{res}      1,360        4.25       47.37
+{txt}       Ntcheu {c |}{res}        952        2.98       50.35
+{txt}Lilongwe City {c |}{res}      2,944        9.20       59.55
+{txt}     Mangochi {c |}{res}      1,776        5.55       65.10
+{txt}     Machinga {c |}{res}      1,104        3.45       68.55
+{txt}        Zomba {c |}{res}      1,168        3.65       72.20
+{txt}   Chiradzulu {c |}{res}        376        1.18       73.38
+{txt}     Blantyre {c |}{res}        680        2.13       75.50
+{txt}       Mwanza {c |}{res}        240        0.75       76.25
+{txt}       Thyolo {c |}{res}      1,168        3.65       79.90
+{txt}      Mulanje {c |}{res}        944        2.95       82.85
+{txt}     Phalombe {c |}{res}        472        1.48       84.33
+{txt}     Chikwawa {c |}{res}        904        2.83       87.15
+{txt}       Nsanje {c |}{res}        152        0.47       87.63
+{txt}       Balaka {c |}{res}        704        2.20       89.83
+{txt}         Neno {c |}{res}         72        0.23       90.05
+{txt}   Zomba City {c |}{res}      1,304        4.08       94.13
+{txt}Blantyre City {c |}{res}      1,880        5.88      100.00
+{txt}{hline 14}{c +}{hline 35}
+        Total {c |}{res}     32,000      100.00
+
+{com}. tab district if shock == "ag", sum(shk_)
+
+  {txt}IHPS 2013 {c |}
+   District {c |}           Summary of shk_
+   Location {c |}        Mean   Std. Dev.       Freq.
+{hline 12}{c +}{hline 36}
+    Chitipa {c |}  {res} .91056911   .28653184         123
+  {txt}  Karonga {c |}  {res} .81132075    .3924898         159
+  {txt}Nkhata Ba {c |}  {res} .50458716   .50228834         109
+  {txt}   Rumphi {c |}  {res} .83116883   .37705917          77
+  {txt}   Mzimba {c |}  {res} .90987124   .28698264         233
+  {txt}Mzuzu Cit {c |}  {res} .33742331   .47428776         163
+  {txt}  Kasungu {c |}  {res} .82857143   .37823629         140
+  {txt}Nkhotakot {c |}  {res} .78431373    .4153902          51
+  {txt}  Ntchisi {c |}  {res} .86170213   .34706337          94
+  {txt}     Dowa {c |}  {res} .85714286   .35132403         126
+  {txt}   Salima {c |}  {res} .88709677   .31905797          62
+  {txt} Lilongwe {c |}  {res} .88513514   .31939877         296
+  {txt}  Mchinji {c |}  {res} .89130435   .31296251          92
+  {txt}    Dedza {c |}  {res} .82941176   .37725998         170
+  {txt}   Ntcheu {c |}  {res} .88235294   .32355207         119
+  {txt}Lilongwe  {c |}  {res} .21467391   .41115495         368
+  {txt} Mangochi {c |}  {res} .62162162   .48607867         222
+  {txt} Machinga {c |}  {res} .72463768   .44832398         138
+  {txt}    Zomba {c |}  {res} .92465753   .26485172         146
+  {txt}Chiradzul {c |}  {res} .89361702   .31166053          47
+  {txt} Blantyre {c |}  {res} .76470588   .42669993          85
+  {txt}   Mwanza {c |}  {res}        .8    .4068381          30
+  {txt}   Thyolo {c |}  {res} .80821918   .39505684         146
+  {txt}  Mulanje {c |}  {res} .87288136   .33452633         118
+  {txt} Phalombe {c |}  {res} .91525424   .28089362          59
+  {txt} Chikwawa {c |}  {res}  .7079646   .45672389         113
+  {txt}   Nsanje {c |}  {res} .36842105   .49559463          19
+  {txt}   Balaka {c |}  {res} .86363636   .34514092          88
+  {txt}     Neno {c |}  {res} .44444444   .52704628           9
+  {txt}Zomba Cit {c |}  {res} .82208589   .38361898         163
+  {txt}Blantyre  {c |}  {res} .33617021   .47340625         235
+{txt}{hline 12}{c +}{hline 36}
+      Total {c |}  {res}    .71375   .45206419        4000
+
+{com}. tabsort district if shock == "ag", sum(shk_)
+
+  {txt}IHPS 2013 {c |}
+   District {c |}           Summary of shk_
+   Location {c |}        Mean   Std. Dev.       Freq.
+{hline 12}{c +}{hline 36}
+  Lilongwe  {c |}  {res} .21467391   .41115495         368
+  {txt} Lilongwe {c |}  {res} .88513514   .31939877         296
+  {txt}Blantyre  {c |}  {res} .33617021   .47340625         235
+  {txt}   Mzimba {c |}  {res} .90987124   .28698264         233
+  {txt} Mangochi {c |}  {res} .62162162   .48607867         222
+  {txt}    Dedza {c |}  {res} .82941176   .37725998         170
+  {txt}Mzuzu Cit {c |}  {res} .33742331   .47428776         163
+  {txt}Zomba Cit {c |}  {res} .82208589   .38361898         163
+  {txt}  Karonga {c |}  {res} .81132075    .3924898         159
+  {txt}    Zomba {c |}  {res} .92465753   .26485172         146
+  {txt}   Thyolo {c |}  {res} .80821918   .39505684         146
+  {txt}  Kasungu {c |}  {res} .82857143   .37823629         140
+  {txt} Machinga {c |}  {res} .72463768   .44832398         138
+  {txt}     Dowa {c |}  {res} .85714286   .35132403         126
+  {txt}  Chitipa {c |}  {res} .91056911   .28653184         123
+  {txt}   Ntcheu {c |}  {res} .88235294   .32355207         119
+  {txt}  Mulanje {c |}  {res} .87288136   .33452633         118
+  {txt} Chikwawa {c |}  {res}  .7079646   .45672389         113
+  {txt}Nkhata Ba {c |}  {res} .50458716   .50228834         109
+  {txt}  Ntchisi {c |}  {res} .86170213   .34706337          94
+  {txt}  Mchinji {c |}  {res} .89130435   .31296251          92
+  {txt}   Balaka {c |}  {res} .86363636   .34514092          88
+  {txt} Blantyre {c |}  {res} .76470588   .42669993          85
+  {txt}   Rumphi {c |}  {res} .83116883   .37705917          77
+  {txt}   Salima {c |}  {res} .88709677   .31905797          62
+  {txt} Phalombe {c |}  {res} .91525424   .28089362          59
+  {txt}Nkhotakot {c |}  {res} .78431373    .4153902          51
+  {txt}Chiradzul {c |}  {res} .89361702   .31166053          47
+  {txt}   Mwanza {c |}  {res}        .8    .4068381          30
+  {txt}   Nsanje {c |}  {res} .36842105   .49559463          19
+  {txt}     Neno {c |}  {res} .44444444   .52704628           9
+{txt}{hline 12}{c +}{hline 36}
+      Total {c |}  {res}    .71375   .45206419        4000
+
+{com}. exit, clear
