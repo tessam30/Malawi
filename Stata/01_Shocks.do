@@ -22,7 +22,7 @@ clear
 use "$wave2/HH_MOD_U.dta" 
 
 * Excecute program to create macros with lists of numbers
-include $pathdo/cnumlist.do
+include $pathdo3/cnumlist.do
 
 * Tabulate top two shocks for creating shock variables
 tab hh_u0a if inlist(hh_u02, 1, 2)
@@ -76,7 +76,7 @@ lab def shockN 101 "drought" 102 "floods" 103 "earthquakes" 104 "crop pest/disea
 */ 109 "remittances/aid ends" 110 "non-ag earnings fall" 111 "non-ag biz failure" 112 "salary reduced" /*
 */ 113 "unemployed" 114 "illness/injury" 115 "birth in hh" 116 "death of income earner" /*
 */ 117 "other death" 118 "hh break-up" 119 "theft all forms" 120 "conflict/violence" 121 "other" /*
-*/ 1101 "irregular rains" 1101 "landslides"
+*/ 1101 "irregular rains" 1102 "landslides"
 la val shock_code shockN
 
 /*ag 		= other crop damage; input price increase; death of livestock
@@ -130,7 +130,7 @@ graph hbar (count) if rptShock == 1, /*
 */ over(shock_code, sort(1) descending label(labsize(vsmall))) /*
 */ blabel(bar) scheme(s2mono) scale(.80) /*
 */ by(shock_sev, missing cols(2) iscale(*.80) /*
-*/ title(High food and agricultural input prices are the most common and severe shocks/*
+*/ title(High food and agricultural input prices are the most common and the most severe shocks/*
 */, size(small) color("100 100 100"))) 
 graph export "$pathgraph\Shocks.pdf", as(pdf) replace
 
@@ -139,7 +139,7 @@ graph hbar (count) if rptShock == 1, /*
 */ over(shock_type, sort(1) descending label(labsize(vsmall))) /*
 */ blabel(bar) scheme(s2mono) scale(.8) /*
 */ by(shock_sev, missing cols(2) iscale(*.8) title(Food price /*
-*/ and agricultural-based shocks are the most common and severe shock categories/*
+*/ and agricultural shocks are the most common and most severe shock categories/*
 */, size(small) color("100 100 100")))
 graph export "$pathgraph\Shock_categories.pdf", as(pdf) replace
 
@@ -172,12 +172,15 @@ ds (hh_* shock_des shock_code shock_type ), not
 keep `r(varlist)'
 
 ds (occ qx_type y2_hhid interview_status shock_sev), not
-include "$pathdo/copylabels.do"
+include "$pathdo3/copylabels.do"
 	collapse (max) `r(varlist)', by(y2_hhid)
-include "$pathdo/attachlabels.do"
+include "$pathdo3/attachlabels.do"
+
+g anyShock = tot_shocks>0
 
 merge 1:1 y2_hhid using "$pathout/geo_hh_roster.dta", gen(geo_merge)
 save "$pathout/shocks_wide.dta", replace
+export delimited "$pathxls/shocks_wide.csv", replace
 
 foreach x of varlist ag conflict disaster financial health other foodprice tot_shocks {
 	ren `x' shk_`x'
@@ -189,6 +192,9 @@ ren shk_ shocked
 
 save "$pathout_shocks.dta", replace
 
+
+
+* Stopped here due to RDMA training prep
 bob
 
 
@@ -259,23 +265,10 @@ g byte othcope3 = inlist(hh_u04b, $othcope) & rptShock == 1
 
 * Create a couple of graphics showing how households cope by shock type
 
-
-
-
-
 * merge in geovariables section
 merge m:m y2_hhid using "$wave2/HouseholdGeovariables_IHPS.dta", gen(geo_merge)
 
-
-				
-				
-
-
-
-
-
-
-* Create a total shocks variable which cuts data into buckets
+*Create a total shocks variable which cuts data into buckets
 clonevar totalShocks = totShocks
 recode totalShocks (11 8 7 6 5 4  = 3)
 la def ts 0 "No Shocks" 1 "One" 2 "Two" 3 "Three or more"
