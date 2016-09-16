@@ -1,4 +1,19 @@
-* Data processing 
+* Describe what is accomplished with file:
+* This .do file processed the household education variables
+* Date: 2016/09/16
+* Author: Park Muhonda & Tim Essam
+* Project: WVU Livelihood Analysis for Malawi
+********************************************************************
+
+
+* Load the dataset needed to derive education variables
+use "$wave1/HH_MOD_C.dta"
+
+** What is the purpose of the code below? What do you want it to accomplish?
+* The first 1/2 seems redundant to the demographic processing.
+**********************************************************************
+
+/* Data processing 
 g byte hohc = hh_c01 == 1
 la var hohc "Head of household"
 

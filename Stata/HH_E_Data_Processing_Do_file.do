@@ -1,3 +1,16 @@
+* Describe what is accomplished with file:
+* This .do file calculates the ganyu labor time for households
+* Date: 2016/09/16
+* Author: Park Muhonda & Tim Essam
+* Project: WVU Livelihood Analysis for Malawi
+********************************************************************
+
+
+
+clear
+capture log close
+use "$wave1/HH_MOD_D.dta"
+
 * water time 
 egen totWaterTime = total(hh_e05), by(case_id)
 g spouseWaterTime = (hh_e05) if hh_e01 == 2 

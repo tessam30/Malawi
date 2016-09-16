@@ -1,3 +1,24 @@
+* Describe what is accomplished with file:
+* This .do file processes household illnesses
+* Date: 2016/09/16
+* Author: Park Muhonda & Tim Essam
+* Project: WVU Livelihood Analysis for Malawi
+********************************************************************
+
+
+clear
+capture log close
+use "$wave1/HH_MOD_D.dta"
+
+
+* What is itention of creating the following variables? Are you iterested
+* whether or not the household has any illness or that it is mainly in the 
+* population of economically active individuals? Remember, most of your analysis
+* is going to be at the household level. So carefully think about how you intend
+* to use/analyze the variables before they are created. If you really care about 
+* total instances of illness in a hh in the last week you will also want to restrict
+* this to normal household membmers. To derive this informaiton you'll likely have to
+* modify the HH_B data processing .do file
 
 * Household illness past 2weeks
 g byte illness_2wk = (hh_d04 == 1)
