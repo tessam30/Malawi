@@ -37,7 +37,7 @@ global projectpath "C:/Users/Tim/Documents/"
 cd "$projectpath"
 
 * Run a macro to set up study folder (needs to be modified)
-* Name the file path below -- replace "Bangladesh" with your folder name
+* Name the file path below -- replace "Malawi" with your folder name
 local pFolder Malawi
 foreach dir in `pFolder' {
 	confirmdir "`dir'"

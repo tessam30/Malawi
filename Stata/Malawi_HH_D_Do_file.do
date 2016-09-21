@@ -1,7 +1,7 @@
 * Describe what is accomplished with file:
 * This .do file processes household illnesses
 * Date: 2016/09/16
-* Author: Park Muhonda & Tim Essam
+* Author: Brent McCusker, Park Muhonda & Tim Essam
 * Project: WVU Livelihood Analysis for Malawi
 ********************************************************************
 
@@ -18,7 +18,7 @@ use "$wave1/HH_MOD_D.dta"
 * to use/analyze the variables before they are created. If you really care about 
 * total instances of illness in a hh in the last week you will also want to restrict
 * this to normal household membmers. To derive this informaiton you'll likely have to
-* modify the HH_B data processing .do file and then merge the flag into this dataset
+* modify the HH_B data processing .do file
 
 * Household illness past 2weeks
 g byte illness_2wk = (hh_d04 == 1)
@@ -44,4 +44,3 @@ collapse (max) `r(varlist)', by(case_id)
 
 qui include "/Users/student/Desktop/LAM MALAWI_STATA/DataProcessing/attachlables.do"
 
-* Does not save the output? Where is the output saved?
