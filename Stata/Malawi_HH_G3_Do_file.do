@@ -31,10 +31,10 @@ la var shared "Shared meal with non household member"
   3) Adults 16-65 years(C)
   4) People over 66 years(D) */
 
-g byte children = hh_g10a == "A" 
-g byte childnAbov5 = hh_g10a == "B" 
-g byte adults = hh_g10a == "C"
-g byte eldery =  hh_g10a == "D" 
+g byte children = (hh_g10a == "A") & hh_g09 == 1 
+g byte childnAbov5 = hh_g10a == "B" & hh_g09 == 1 
+g byte adults = hh_g10a == "C" & hh_g09 == 1 
+g byte eldery =  hh_g10a == "D" & hh_g09 == 1 
 
 la var children "Children 0-5 years"
 la var childnAbov5 "Children 6-15 years"

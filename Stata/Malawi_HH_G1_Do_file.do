@@ -41,7 +41,7 @@ use "$wave1/HH_MOD_G1.dta", clear
   12) Spices condiments and beverages	*/
 
 g byte cereal = inlist(hh_g02, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 114, 115, 116, 117, 820, 827, 828) == 1 & hh_g01 == 1
-g byte starch = inlist(hh_g02, 201, 202, 203, 204, 205,206,207, 208, 821, 822) == 1 & hh_g01 == 1
+g byte starch = inlist(hh_g02, 201, 202, 203, 204, 205, 206,207, 208, 821, 822) == 1 & hh_g01 == 1
 g byte veg =  inlist(hh_g02, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414) == 1 & hh_g01 == 1
 g byte fruit =  inlist(hh_g02, 601, 602, 603, 604, 605,606,607, 608, 609, 610) == 1 & hh_g01 == 1
 g byte meat =  inlist(hh_g02, 504, 505,506,507, 508, 509, 512, 824, 825) == 1 & hh_g01 == 1

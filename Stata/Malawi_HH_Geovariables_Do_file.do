@@ -8,16 +8,12 @@
 clear
 capture log close
 
-* Read in the data you are using; Use relative paths whenver possible
-/* Note: I store the raw data in two folders called wave1 and wave 2.
-I then point to them using global macros. This keeps the code general
-and allows me to port it across machines by only changing the macro and
-not any hard-coded depedencies. */
-
+/*
 global wave1 "C:/Users/student/Documents/Malawi/Datain/wave1"
 global wave2 "C:/Users/student/Documents/Malawi/Datain/wave2"
 global pathout "C:/Users/student/Documents/Malawi/Dataout"
 *global pathdo "C:/Users/student/Documents/GitHub/Malawi/Stata"
+*/
 
 * Load the dataset needed to derive household GeographicInfo
 use "$wave1/HouseholdGeovariables.dta"
@@ -25,7 +21,7 @@ use "$wave1/HouseholdGeovariables.dta"
 * Extract relevant data
 clonevar latitude = lat_modified 
 clonevar longitude = lon_modified
-keep case_id ea_id longitude latitude
+keep case_id ea_id longitude latitude dist_*
 
 g year = 2011
 compress
@@ -41,8 +37,13 @@ use "$wave2/HouseholdGeovariables_IHPS.dta", clear
 clonevar latitude = LAT_DD_MOD
 clonevar longitude = LON_DD_MOD
 
-keep y2_hhid latitude longitude
+keep y2_hhid latitude longitude dist_*
 
 g year = 2013
 compress
 save "$pathout/geovars_2013.dta", replace
+
+* Append datasets togther; ea_id should be the unique ID
+append using "$pathout/geovars_2011.dta"
+
+save "$pathout/geovars_all.dta", replace
