@@ -14,13 +14,17 @@ I then point to them using global macros. This keeps the code general
 and allows me to port it across machines by only changing the macro and
 not any hard-coded depedencies. */
 
+/*
 global wave1 "C:/Users/student/Documents/Malawi/Datain/wave1"
 global wave2 "C:/Users/student/Documents/Malawi/Datain/wave2"
 global pathout "C:/Users/student/Documents/Malawi/Dataout"
 *global pathdo "C:/Users/student/Documents/GitHub/Malawi/Stata"
+*/
 
 * Load the dataset needed to derive time use and ganyu variables
-use "$wave1/HH_MOD_G1.dta"
+use "$wave1/HH_MOD_G1.dta", clear
+
+* Frequency of consumption information is missing so this module is not capable of creating a FCS.
 
 /* Create dietary diversity variable consisting of following food groups:
   1) Cereals - cereal_days & pulses (x)
@@ -36,8 +40,8 @@ use "$wave1/HH_MOD_G1.dta"
   11) Sweets*
   12) Spices condiments and beverages	*/
 
-g byte cereal = inlist(hh_g02, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 114, 115, 116, 117, 820, 827, 828, 829 ) == 1 & hh_g01 == 1
-g byte starch = inlist(hh_g02, 201, 202, 203, 204, 205,206,207, 208, 209, 821, 822) == 1 & hh_g01 == 1
+g byte cereal = inlist(hh_g02, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 114, 115, 116, 117, 820, 827, 828) == 1 & hh_g01 == 1
+g byte starch = inlist(hh_g02, 201, 202, 203, 204, 205,206,207, 208, 821, 822) == 1 & hh_g01 == 1
 g byte veg =  inlist(hh_g02, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414) == 1 & hh_g01 == 1
 g byte fruit =  inlist(hh_g02, 601, 602, 603, 604, 605,606,607, 608, 609, 610) == 1 & hh_g01 == 1
 g byte meat =  inlist(hh_g02, 504, 505,506,507, 508, 509, 512, 824, 825) == 1 & hh_g01 == 1
@@ -85,13 +89,13 @@ g sweetFCS = sweet_days * 0.5
 g oilFCS = oil_days * 0.5
 
 * Keep derived data (FCS & dietary diversity scores) and HHID
-ds(hh_s* saq* ea_id), not
+ds(hh_* visit), not
 keep `r(varlist)'
 
 * Collapse down to household level using max option, retain labels
 qui include "$pathdo/copylabels.do"
-ds(household_id), not
-collapse (max) `r(varlist)', by(household_id)
+ds(case_id ea_id), not
+collapse (max) `r(varlist)', by(case_id)
 qui include "$pathdo/attachlabels.do"
 
 * Calculate two metrics

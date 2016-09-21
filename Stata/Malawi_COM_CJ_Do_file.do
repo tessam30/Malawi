@@ -20,7 +20,7 @@ global pathout "C:/Users/student/Documents/Malawi/Dataout"
 *global pathdo "C:/Users/student/Documents/GitHub/Malawi/Stata"
 
 * Load the dataset needed to derive time use and ganyu variables
-use "$wave1/COM_CJ.dta"
+use "$wave1/COM_CJ.dta", clear
 
 /* Organisation 
 Village Development Committee 
@@ -42,6 +42,38 @@ Community Police/Watch Group
 Disabled Assoc. 
 Other (Specify) */
 
+* You can also accomplish this with a simple loop
+
+* Use the delimit command to allow text to wrap in the do file*
+* end the command using the delimit off command
+#delimit ;
+local gp VDC Agr_Coop Farmers_Grp Sav_Cred_Coop Business_Assoc Women_Grp 
+		Youth_Grp Political_Grp Religious_Grp Cultural_Grp Health_Comm 
+		School_Comm PTA Sports_Grp NGO Commnty_Police Disabled_Assoc Other;
+#delimit cr
+local i = 301
+foreach x of local gp {
+	g `x' = com_cj0b == `i' & com_cj01 == 1
+	la var `x' "`x' group"
+	g `x'_femMemb = com_cj05 if `x' == 1
+	la var `x'_femMemb "female members in `x' group"
+	
+	* List the value of the iterator i
+	display in yellow "i takes value of `i'
+	local i = `++i'
+	
+	* On the final loop list the values of the labels
+		if `i' == 318 {
+			label list COM_CJ0B
+			}
+	}
+*end
+ 
+/* QA/QC note: Check if 999 is missing or actual membership size */
+
+
+
+/*
 g VDC = com_cj0b == 301 & com_cj01 == 1
 g Agr_Coop = com_cj0b == 302 & com_cj01 == 1
 g Farmers_Grp = com_cj0b == 303 & com_cj01 == 1
@@ -60,6 +92,7 @@ g NGO = com_cj0b == 315 & com_cj01 == 1
 g Commnty_Police = com_cj0b == 316 & com_cj01 == 1
 g Disabled_Assoc = com_cj0b == 317 & com_cj01 == 1
 g Other	= com_cj0b == 318 & com_cj01 == 1
+
 
 la var VDC "Village Development Committee" 
 la var Agr_Coop "Agricultural Coop"
@@ -118,24 +151,28 @@ la var femNGO "Female Members in NGO"
 la var femCommnty_Police "Female Members in Community Police/Watch Group"
 la var femDisabled_Assoc "Female Members in Disabled Assoc."
 la var femOther "Female Members in Other (Specify)"
+*/
 
-* Keep derived data (FCS & dietary diversity scores) and HHID
-ds(hh_s* saq* ea_id), not
-keep `r(varlist)'
+* 
+* Need to keep the ea_id variable as this is what allows us to merge
+* the information back with the household.
+*ds(hh_s* saq* ea_id), not
+*keep `r(varlist)'
 
 * Collapse down to household level using max option, retain labels
 qui include "$pathdo/copylabels.do"
-ds(case_id), not
+ds(ea_id com_*), not
 collapse (max) `r(varlist)', by(ea_id)
 qui include "$pathdo/attachlabels.do"
 
-
+compress
 sa "$pathout/communnal_organisation_2011.dta", replace
 
 ***** Wave 2 *****
 * Process 2nd wave 
 * Load the dataset needed to ptocess communal organisation variables
-use "$wave2/COM_MOD_J.dta"
+use "$wave2/COM_MOD_J.dta", clear
+
 
 /* Organisation 
 Village Development Committee 
@@ -158,6 +195,35 @@ Disabled Assoc.
 Other (Specify) 
 Tobacco Club */
 
+
+
+#delimit ; 
+local gp VDC Agr_Coop
+Farmers_Grp Sav_Cred_Coop Business_Assoc Women_Grp Youth_Grp Political_Grp 
+	Religious_Grp Cultural_Grp Health_Comm School_Comm PTA Sports_Grp NGO 
+	Commnty_Police Disabled_Assoc Other;
+#delimit cr
+
+* Set i as the initial number of the group; Note: Tobacco club is 3302
+local i = 301
+foreach x of local gp {
+	g `x' = com_cj0b == `i' & com_cj01 == 1
+	la var `x' "`x' group"
+	g `x'_femMemb = com_cj05 if `x' == 1
+	la var `x'_femMemb "`x' female members in `x' group"
+	
+	* List the value of the iterator i
+	display in yellow "i takes value of `i'
+	local i = `++i'
+	}
+*end
+
+g Tobacco_club = com_cj0b == 3302 & com_cj01 == 1
+la var Tobacco_club "Tobacco_club group"
+g Tobacco_club_femMemb = com_cj05 if Tobacco_club == 1
+la var Tobacco_club_femMemb "female members in Tobacco_club"
+
+/*
 g VDC = com_cj0b == 301 & com_cj01 == 1
 g Agr_Coop = com_cj0b == 302 & com_cj01 == 1
 g Farmers_Grp = com_cj0b == 303 & com_cj01 == 1
@@ -237,16 +303,12 @@ la var femCommnty_Police "Female Members in Community Police/Watch Group"
 la var femDisabled_Assoc "Female Members in Disabled Assoc."
 la var femOther "Female Members in Other (Specify)"
 la var femTobacco_Club "Female Members in Tobacco Club)"
-
-* Keep derived data (FCS & dietary diversity scores) and HHID
-ds(hh_s* saq* ea_id), not
-keep `r(varlist)'
+*/
 
 * Collapse down to household level using max option, retain labels
 qui include "$pathdo/copylabels.do"
-ds(case_id), not
+ds(com_* occ ea_id), not
 collapse (max) `r(varlist)', by(ea_id)
 qui include "$pathdo/attachlabels.do"
-
 
 sa "$pathout/communal_organisation_2013.dta", replace
