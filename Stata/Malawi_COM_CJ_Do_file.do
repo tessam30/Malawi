@@ -9,15 +9,12 @@ clear
 capture log close
 
 * Read in the data you are using; Use relative paths whenver possible
-/* Note: I store the raw data in two folders called wave1 and wave 2.
-I then point to them using global macros. This keeps the code general
-and allows me to port it across machines by only changing the macro and
-not any hard-coded depedencies. */
 
-global wave1 "C:/Users/student/Documents/Malawi/Datain/wave1"
+/* global wave1 "C:/Users/student/Documents/Malawi/Datain/wave1"
 global wave2 "C:/Users/student/Documents/Malawi/Datain/wave2"
 global pathout "C:/Users/student/Documents/Malawi/Dataout"
 *global pathdo "C:/Users/student/Documents/GitHub/Malawi/Stata"
+*/ 
 
 * Load the dataset needed to derive time use and ganyu variables
 use "$wave1/COM_CJ.dta", clear
@@ -165,6 +162,7 @@ ds(ea_id com_*), not
 collapse (max) `r(varlist)', by(ea_id)
 qui include "$pathdo/attachlabels.do"
 
+gen year = 2011
 compress
 sa "$pathout/communnal_organisation_2011.dta", replace
 
@@ -198,30 +196,35 @@ Tobacco Club */
 
 
 #delimit ; 
-local gp VDC Agr_Coop
-Farmers_Grp Sav_Cred_Coop Business_Assoc Women_Grp Youth_Grp Political_Grp 
-	Religious_Grp Cultural_Grp Health_Comm School_Comm PTA Sports_Grp NGO 
-	Commnty_Police Disabled_Assoc Other;
+local gp VDC Agr_Coop Farmers_Grp Sav_Cred_Coop Business_Assoc Women_Grp Youth_Grp 
+		Political_Grp Religious_Grp Cultural_Grp Health_Comm School_Comm PTA 
+		Sports_Grp NGO Commnty_Police Disabled_Assoc Other Tobacco_club;
 #delimit cr
+* Create a local macro that stores all the unique values of the com_cj0b variable
+levelsof(com_cj0b), local(levels)
+
+
+*Verify that the numbers balance
+local num : list sizeof local(levels)
+local num2: list sizeof local(gp)
+
+
+assert `num' == `num2'
+display in yellow "Unique elements in hh_r0a = `num' ==> Unique categories to be created == `num2'"
 
 * Set i as the initial number of the group; Note: Tobacco club is 3302
-local i = 301
-foreach x of local gp {
-	g `x' = com_cj0b == `i' & com_cj01 == 1
+
+forvalues i = 1/`num' {
+	local x : word `i' of `gp'
+	local b : word `i' of `levels'
+	
+	g `x' = com_cj0b == `b' & com_cj01 == 1
 	la var `x' "`x' group"
 	g `x'_femMemb = com_cj05 if `x' == 1
 	la var `x'_femMemb "`x' female members in `x' group"
-	
-	* List the value of the iterator i
-	display in yellow "i takes value of `i'
-	local i = `++i'
 	}
 *end
 
-g Tobacco_club = com_cj0b == 3302 & com_cj01 == 1
-la var Tobacco_club "Tobacco_club group"
-g Tobacco_club_femMemb = com_cj05 if Tobacco_club == 1
-la var Tobacco_club_femMemb "female members in Tobacco_club"
 
 /*
 g VDC = com_cj0b == 301 & com_cj01 == 1
@@ -310,5 +313,9 @@ qui include "$pathdo/copylabels.do"
 ds(com_* occ ea_id), not
 collapse (max) `r(varlist)', by(ea_id)
 qui include "$pathdo/attachlabels.do"
-
+gen year = 2013
 sa "$pathout/communal_organisation_2013.dta", replace
+
+* Append in the 2011 co information
+append using "$pathout/communnal_organisation_2011.dta"
+save "$pathout/com_orgs_all.dta", replace

@@ -8,19 +8,7 @@
 clear
 capture log close
 
-* Read in the data you are using; Use relative paths whenver possible
-/* Note: I store the raw data in two folders called wave1 and wave 2.
-I then point to them using global macros. This keeps the code general
-and allows me to port it across machines by only changing the macro and
-not any hard-coded depedencies. */
-
-/*global wave1 "C:/Users/student/Documents/Malawi/Datain/wave1"
-global wave2 "C:/Users/student/Documents/Malawi/Datain/wave2"
-global pathout "C:/Users/student/Documents/Malawi/Dataout"
-*global pathdo "C:/Users/student/Documents/GitHub/Malawi/Stata"
-*/
-
-* Load the dataset 
+* Load the dataset for dietary diversity and food consumption scores
 use "$wave1/HH_MOD_G2.dta", clear
 
 /* Create dietary diversity variable consisting of following food groups:
@@ -76,7 +64,6 @@ foreach x of local dietLab {
 g cerealFCS = cereal_days * 2
 g starchFCS = roots_days * 2
 g staplesFCS = staple_days * 2
-
 g legumesFCS = legumes_days * 3
 
 * Both weighted by 1

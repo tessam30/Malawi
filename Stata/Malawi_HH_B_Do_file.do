@@ -8,16 +8,11 @@
 clear
 capture log close
 
-* Read in the data you are using; Use relative paths whenver possible
-/* Note: I store the raw data in two folders called wave1 and wave 2.
-I then point to them using global macros. This keeps the code general
-and allows me to port it across machines by only changing the macro and
-not any hard-coded depedencies. */
-
-global wave1 "C:/Users/student/Documents/Malawi/Datain/wave1"
+/* global wave1 "C:/Users/student/Documents/Malawi/Datain/wave1"
 global wave2 "C:/Users/student/Documents/Malawi/Datain/wave2"
 global pathout "C:/Users/student/Documents/Malawi/Dataout"
 *global pathdo "C:/Users/student/Documents/GitHub/Malawi/Stata"
+*/
 
 * Load the dataset needed to derive household demographic variables
 use "$wave1/HH_MOD_B.dta"
@@ -222,8 +217,8 @@ g year = 2013
 compress
 save "$pathout/hh_dem_wave2.dta", replace
 
-/* append the two datasets together
+* append the two datasets together
 append using "$pathout/hh_dem_wave1.dta"
 sort case_id year
-save "$pathout/hh_demog.dta", replace
+save "$pathout/hh_demog_all.dta", replace
 

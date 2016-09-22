@@ -179,13 +179,16 @@ la var ganyuTotHHWageLogPC "total household ganyu wage logged ganyu participant"
 
 *collapse
 qui include "$pathdo/copylabels.do"
-
-ds(occ y2_hhid PID qx_type baselineme~r moverbasehh interview_status hh_* /*
-*/ hhmember baselineme~t _roster tmp*), not
-collapse (max) `r(varlist)', by(y2_hhid)
-
+	ds(occ y2_hhid PID qx_type baselineme~r moverbasehh interview_status hh_* /*
+	*/ hhmember baselineme~t _roster tmp*), not
+	collapse (max) `r(varlist)', by(y2_hhid)
 qui include "$pathdo/attachlabels.do"
 
 g year = 2013
 compress
 save "$pathout/hh_dem_modE_wave2.dta", replace
+
+* Append two datasets together
+append using "$pathout/hh_dem_modE_wave1.dta"
+order case_id y2_hhid
+save "$pathout/labor_all_dta", replace
