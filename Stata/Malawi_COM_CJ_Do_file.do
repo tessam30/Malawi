@@ -56,7 +56,7 @@ foreach x of local gp {
 	la var `x'_femMemb "female members in `x' group"
 	
 	* List the value of the iterator i
-	display in yellow "i takes value of `i'
+	display in yellow "i takes value of `i'"
 	local i = `++i'
 	
 	* On the final loop list the values of the labels

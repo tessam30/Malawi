@@ -17,7 +17,6 @@ global pathout "C:/Users/student/Documents/Malawi/Dataout"
 * Load the dataset needed to derive household demographic variables
 use "$wave1/HH_MOD_B.dta"
 
-
 * Data processing 
 g byte hoh =  hh_b04 == 1
 la var hoh "Head of household"
