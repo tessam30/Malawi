@@ -1,7 +1,7 @@
 * Describe what is accomplished with file:
 * This .do file processed communual organisation   
 * Date: 2016/09/16
-* Author: Brent McCusker, Park Muhonda & Tim Essam
+* Author: Tim Essam, Brent McCusker & Park Muhonda
 * Project: WVU Livelihood Analysis for Malawi
 ********************************************************************
 
