@@ -2,7 +2,7 @@
 # Name:		Malawi_HH_L_Do_file.do
 # Purpose:	Process household durable goods for wealth index
 # Author:	Tim Essam, Ph.D.
-# Created:	2016/04/27
+# Created:	2016/09/25
 # Owner:	USAID GeoCenter | OakStream Systems, LLC
 # License:	MIT License
 # Ado(s):	see below
