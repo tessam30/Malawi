@@ -70,7 +70,7 @@ local health `r(numlist)'
 
 * Create scalars to set the range of severity that will be considered for flagging shocks
 scalar s_min = 1
-scalar s_max = .
+scalar s_max = 2
 
 * Create standard categories for shocks using WB methods
 g byte ag     = inlist(hh_u0a, `ag') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
@@ -122,19 +122,18 @@ graph hbar (count) if rptShock == 1, /*
 */, size(small) color("100 100 100")))
 graph export "$pathgraph\Shock_categories_rural2011.pdf", as(pdf) replace
 
-
 * Total shocks reported by hh
 egen tot_shocks = total(rptShock), by(case_id)
 
 * Label shocks
-la var ag "Agricultural"
-la var conflict "Conflict"
-la var disaster "Disaster"
-la var financial "Financial"
-la var health "Health"
-la var other "Other"
-la var foodprice "Price rise"
-la var shock_type "type of shock"
+la var ag "Agricultural shock (any severity)"
+la var conflict "Conflict shock (any severity)"
+la var disaster "Disaster shock (any severity)"
+la var financial "Financial shock (any severity)"
+la var health "Health shock (any severity)"
+la var other "Other shock (any severity)"
+la var foodprice "Price rise shock (any severity)"
+la var shock_type "type of shock shock (any severity)"
 
 * Incorporate coping strategy informationuse per Brent's request
 /* Coping Mechanisms - What are good v. bad coping strategies? From (Heltberg et al., 2013)
@@ -166,8 +165,6 @@ cnumlist "1 2 3 4 6 7 10 12 16"
 global gdcope `r(numlist)'
 cnumlist "5 9 11 13 14 15 17"
 global bdcope `r(numlist)'
-cnumlist "18 19 20"
-global othcope `r(numlist)'
     
 g byte goodcope = inlist(hh_u04a, $gdcope) & rptShock == 1 
 g byte badcope = inlist(hh_u04a, $bdcope) & rptShock == 1
@@ -176,33 +173,38 @@ g byte praycope = inlist(hh_u04a, 18) & rptShock == 1
 
 g byte goodcope2 = inlist(hh_u04b, $gdcope) & rptShock == 1 
 g byte badcope2 = inlist(hh_u04b,  $bdcope) & rptShock == 1
-g byte othcope2 = inlist(hh_u04b, $othcope) & rptShock == 1
+g byte nocope2 = inlist(hh_u04b, 19) & rptShock == 1
+g byte praycope2 = inlist(hh_u04b, 18) & rptShock == 1
 
-g byte goodcope3 = inlist(hh_u04a, $gdcope) & rptShock == 1 
-g byte badcope3 = inlist(hh_u04b,  $bdcope) & rptShock == 1
-g byte othcope3 = inlist(hh_u04b, $othcope) & rptShock == 1
+g byte goodcope3 = inlist(hh_u04c, $gdcope) & rptShock == 1 
+g byte badcope3 = inlist(hh_u04c,  $bdcope) & rptShock == 1
+g byte nocope3 = inlist(hh_u04c, 19) & rptShock == 1
+g byte praycope3 = inlist(hh_u04c, 18) & rptShock == 1
 
 * Plot coping strategies by shock type
 
-graph hbar (count) if rptShock == 1 & shock_sev == 1 & shock_type != 5 , /*
-*/ over(first_cope, sort(1) descending label(labsize(vsmall))) /*
+* Create a sorted shock_type variable that is based on the frequency from 
+tabsort hh_u04a shock_type
+recode shock_type (2 = 0 "Disaster")(0 = 1 "Agricultural")(6 = 2 "Food Prices")/*
+  */ (4 = 3 "Health")(1 = 4 "Conflict")(3 = 5 "Financial")(5 = 6 "Other"), gen(shock_sort)
+
+tabsort hh_u04a shock_type if shock_sev == 1
+
+* First look at the primary coping mechanism for ANY type of shock
+graph hbar (count) if rptShock == 1  & shock_type != 5 , /*
+*/ over(hh_u04a, sort(1) descending label(labsize(vsmall))) /*
 */ blabel(bar, size(tiny)) scheme(s2mono) scale(.8)  nofill/*
-*/ by(shock_type, cols(3) iscale(*.8) title(Do nothing is /*
-*/ is the primary coping strategy for most shocks /*
-*/, size(small) color("100 100 100"))) ylabel(, labsize(vsmall))
+*/ by(shock_sort, cols(3) iscale(*.8) title(Do nothing is /*
+*/ the primary coping strategy for all types of shocks/*
+*/, size(small) color("100 100 100"))) ylabel(, labsize(vsmall))/*
+*/ yscale(noline) subtitle(, color("100 100 100"))
+graph export "$pathgraph\Shock_coping_2011.pdf", as(pdf) replace
 
 
-
-
-
-
-
-
-drop qx_type- _merge hh_u*
-
+drop  hh_wgt-h2010_sen hh_*
 
 * Collapse data to househld level and merge back with GIS info
-ds (hh_* shock_code shock_type visit), not
+ds (shock_code shock_type visit), not
 keep `r(varlist)'
 
 include "$pathdo/copylabels.do"
@@ -212,11 +214,22 @@ include "$pathdo/attachlabels.do"
 
 g anyShock = tot_shocks > 0 & tot_shocks != .
 
+la var tot_shocks "total shocks (of any severity)"
+la var goodcope "Good coping mechanisms employed as primary response"
+la var badcope "Bad coping mechanisms employed as primary response"
+la var nocope "Did nothing as primary response"
+la var praycope "Prayed as primary response"
+
 merge 1:1 case_id using "$pathout/geo_hh_roster1.dta", gen(geo_merge)
 gen year = 2011
 save "$pathout/shocks_wide2011.dta", replace
 export delimited "$pathxls/shocks_wide2011.csv", replace
 
+
+/*
+* ############################
+* Run below if plotting in R 
+* #############################
 foreach x of varlist ag conflict disaster financial health other foodprice tot_shocks {
   ren `x' shk_`x'
   }
@@ -225,6 +238,7 @@ foreach x of varlist ag conflict disaster financial health other foodprice tot_s
 * If you want a long panel for plotting in R use code below
 reshape long shk_@, i(case_id) j(shock, string)
 clear
+*/
 
 * #####################
 * 2013 Shocks ****
@@ -341,30 +355,98 @@ graph hbar (count) if rptShock == 1, /*
 */, size(small) color("100 100 100")))
 graph export "$pathgraph\Shock_categories_region2013.pdf", as(pdf) replace
 
-drop HHID-_merge
-
 * Total shocks reported by hh
 egen tot_shocks = total(rptShock), by(y2_hhid)
 
 * Label shocks
-la var ag "Agricultural"
-la var conflict "Conflict"
-la var disaster "Disaster"
-la var financial "Financial"
-la var health "Health"
-la var other "Other"
-la var foodprice "Price rise"
+la var ag "Agricultural shock (any severity)"
+la var conflict "Conflict shock (any severity)"
+la var disaster "Disaster shock (any severity)"
+la var financial "Financial shock (any severity)"
+la var health "Health shock (any severity)"
+la var other "Other shock (any severity)"
+la var foodprice "Price rise shock (any severity)"
+la var shock_type "type of shock shock (any severity)"
 
+label list HH_U04A
+
+clonevar cope_type1 = hh_u04a
+clonevar cope_type2 = hh_u04b
+clonevar cope_type3 = hh_u04c
+clonevar first_cope = hh_u04a
+
+label def copeN 1 "savings" 2 "help relatives/friends" 3 "help govt" 4 "help ngo/relig" /*
+*/ 5 "change eating patterns" 6 "seek more employment" 7 "idle family find work" 8 "migrate" /*
+*/ 9 "reduce exp. on health/ed" 10 "get credit" 11 "sell ag assets" 12 "sell durables" /*
+*/ 13 "sell land/building" 14 "sell crop stock" 15 "sell livestock" 16 "fish more" /*
+*/ 17 "send children away" 18 "spritual efforts" 19 "did nothing" 20 "other"
+lab val cope_type1 copeN
+
+* Create macros of coping types
+cnumlist "1 2 3 4 6 7 10 12 16"
+global gdcope `r(numlist)'
+cnumlist "5 9 11 13 14 15 17"
+global bdcope `r(numlist)'
+    
+g byte goodcope = inlist(hh_u04a, $gdcope) & rptShock == 1 
+g byte badcope = inlist(hh_u04a, $bdcope) & rptShock == 1
+g byte nocope = inlist(hh_u04a, 19) & rptShock == 1
+g byte praycope = inlist(hh_u04a, 18) & rptShock == 1
+
+la var goodcope "Good coping mechanisms employed as primary response"
+la var badcope "Bad coping mechanisms employed as primary response"
+la var nocope "Did nothing as primary response"
+la var praycope "Prayed as primary response"
+
+* Create a sorted shock_type variable that is based on the frequency from 
+tabsort hh_u04a shock_type
+recode shock_type (0 = 0 "Agricultural")(6 = 1 "Food Prices")(2 = 2 "Disaster")/*
+  */ (4 = 3 "Health")(3 = 4 "Financial")(1 = 5 "Conflict")(5 = 6 "Other"), gen(shock_sort)
+
+* Convert the value lables to lowercase for consistency w/ other graphs
+foreach v of varlist hh_u04a {
+  local u : value label `v'
+    * change belwo to upper/proper when needed
+    local l = lower("`u'") 
+    capture labvalclone `u' `l'
+   
+     if _rc == 0 {
+        * change the value label's name
+        label val `v' `l' 
+        label drop `u'
+        levelsof `v', local(xvalues)
+
+           foreach x of local xvalues {
+              local z: label (`v') `x', strict
+              local znew =lower("`z'") 
+              noi di "`x': `z' ==> `znew'"
+              label define `l' `x' "`znew'", modify 
+              }
+     }
+}
+
+* First look at the primary coping mechanism for ANY type of shock
+graph hbar (count) if rptShock == 1  & shock_type != 5 , /*
+*/ over(hh_u04a, sort(1) descending label(labsize(vsmall))) /*
+*/ blabel(bar, size(tiny)) scheme(s2mono) scale(.8)  nofill/*
+*/ by(shock_sort, cols(3) iscale(*.8) title(Using savings is /*
+*/ the primary coping strategy for all types of shocks/*
+*/, size(small) color("100 100 100"))) ylabel(, labsize(vsmall))/*
+*/ yscale(noline) subtitle(, color("100 100 100"))
+graph export "$pathgraph\Shock_coping_2013.pdf", as(pdf) replace
+
+drop dist_to_IHS3location- _merge
 * Collapse data to househld level and merge back with GIS info
-ds (hh_* shock_des shock_code shock_type ), not
+ds (hh_u* shock_des shock_code shock_type occ), not
 keep `r(varlist)'
 
-ds (occ qx_type y2_hhid interview_status shock_sev), not
+ds (qx_type y2_hhid interview_status shock_sev case_id ea_id stratum HHID baseline* panel* region district), not
 include "$pathdo/copylabels.do"
 	collapse (max) `r(varlist)', by(y2_hhid)
 include "$pathdo/attachlabels.do"
 
-g anyShock = tot_shocks>0
+g anyShock = tot_shocks > 0 & !missing(tot_shocks)
+la var anyShock "hh reported any type of shock"
 
 merge 1:1 y2_hhid using "$pathout/geo_hh_roster2.dta", gen(geo_merge)
 g year = 2013
@@ -383,22 +465,3 @@ foreach x of varlist ag conflict disaster financial health other foodprice tot_s
 *end
 reshape long shk_@, i(y2_hhid) j(shock, string)
 
-
-* ###################
-* Coping Mechanisms
-*####################
-
-* Did not get into the following; Do you want coping mechanisms?
-bob
-
-
-* Create a couple of graphics showing how households cope by shock type
-
-* merge in geovariables section
-merge m:m y2_hhid using "$wave2/HouseholdGeovariables_IHPS.dta", gen(geo_merge)
-
-*Create a total shocks variable which cuts data into buckets
-clonevar totalShocks = totShocks
-recode totalShocks (11 8 7 6 5 4  = 3)
-la def ts 0 "No Shocks" 1 "One" 2 "Two" 3 "Three or more"
-la val totalShocks ts
