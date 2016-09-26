@@ -419,7 +419,7 @@ foreach v of varlist hh_u04a {
            foreach x of local xvalues {
               local z: label (`v') `x', strict
               local znew =lower("`z'") 
-              noi di "`x': `z' ==> `znew'"
+              noi display in yellow "`x': `z' ==> `znew'"
               label define `l' `x' "`znew'", modify 
               }
      }
@@ -459,9 +459,10 @@ compress
 save "$pathout/shocks_all.dta", replace
 restore
 
+/*
 foreach x of varlist ag conflict disaster financial health other foodprice tot_shocks {
 	ren `x' shk_`x'
 	}
 *end
 reshape long shk_@, i(y2_hhid) j(shock, string)
-
+*/
