@@ -61,8 +61,7 @@ replace ptrack = 1 if hh_a05 == 1 & ptrack == 2
 
 
 use "$wave2/HH_MOD_A_FILT.dta", clear
-* So documentation of the panel is a bit convoluted based on the original survey documents.
-* http://siteresources.worldbank.org/INTLSMS/Resources/3358986-1233781970982/5800988-1271185595871/6964312-1404828635943/IHPS_BID_FINAL.pdf
+
 
 * Create a variable that tracks the contribution to the 2013 sample
 
