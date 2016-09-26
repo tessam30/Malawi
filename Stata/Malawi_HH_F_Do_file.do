@@ -60,4 +60,7 @@ g year = 2013
 save "$pathout/hh_infra2013.dta", replace
 
 append using "$pathout/hh_infra2011.dta"
+
+clonevar id = case_id
+replace id = y2_hhid if id == "" & year == 2013
 save "$pathout/hh_infra_all.dta", replace

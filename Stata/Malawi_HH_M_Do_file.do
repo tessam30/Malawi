@@ -95,4 +95,7 @@ save "$pathout/hh_agassets2013.dta", replace
 append using "$pathout/hh_agassets2011.dta"
 g year = 2013 if y2_hhid != ""
 replace year = 2011 if case_id != "" & year == .
+
+clonevar id = case_id
+replace id = y2_hhid if id == "" & year == 2013
 save "$pathout/hh_agassets_all.dta", replace
