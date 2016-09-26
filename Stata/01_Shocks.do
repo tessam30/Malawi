@@ -73,13 +73,13 @@ scalar s_min = 1
 scalar s_max = .
 
 * Create standard categories for shocks using WB methods
-g byte ag     = inlist(hh_u0a, `ag') & rptShock/*& inrange(shock_sev, s_min, s_max)*/
-g byte conflict = inlist(hh_u0a, 119, 120) & rptShock/*& inrange(shock_sev, s_min, s_max)*/
-g byte disaster = inlist(hh_u0a, `disaster') & rptShock/*& inrange(shock_sev, s_min, s_max)*/
-g byte financial= inlist(hh_u0a, `fin') & rptShock/*& inrange(shock_sev, s_min, s_max)*/
-g byte health   = inlist(hh_u0a, `health') & rptShock/*& inrange(shock_sev, s_min, s_max)*/
-g byte other  = inlist(hh_u0a, 118, 121) & rptShock/*& inrange(shock_sev, s_min, s_max)*/
-g byte foodprice= inlist(hh_u0a, 108) & rptShock/*& inrange(shock_sev, s_min, s_max)*/
+g byte ag     = inlist(hh_u0a, `ag') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte conflict = inlist(hh_u0a, 119, 120) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte disaster = inlist(hh_u0a, `disaster') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte financial= inlist(hh_u0a, `fin') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte health   = inlist(hh_u0a, `health') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte other  = inlist(hh_u0a, 118, 121) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte foodprice= inlist(hh_u0a, 108) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
 
 * Create a long variable that would identify groups of shocks, strictly for plotting
 g shock_type = .
@@ -122,7 +122,6 @@ graph hbar (count) if rptShock == 1, /*
 */, size(small) color("100 100 100")))
 graph export "$pathgraph\Shock_categories_rural2011.pdf", as(pdf) replace
 
-drop qx_type- _merge hh_u*
 
 * Total shocks reported by hh
 egen tot_shocks = total(rptShock), by(case_id)
@@ -136,6 +135,71 @@ la var health "Health"
 la var other "Other"
 la var foodprice "Price rise"
 la var shock_type "type of shock"
+
+* Incorporate coping strategy informationuse per Brent's request
+/* Coping Mechanisms - What are good v. bad coping strategies? From (Heltberg et al., 2013)
+  http://siteresources.worldbank.org/EXTNWDR2013/Resources/8258024-1352909193861/
+  8936935-1356011448215/8986901-1380568255405/WDR15_bp_What_are_the_Sources_of_Risk_Oviedo.pdf
+  Good Coping: use of savings, credit, asset sales, additional employment, 
+          migration, and assistance
+  Bad Coping: increases vulnerabiliy* compromising health and edudcation 
+        expenses, productive asset sales, conumsumption reductions */
+
+label list HH_U04A
+
+clonevar cope_type1 = hh_u04a
+clonevar cope_type2 = hh_u04b
+clonevar cope_type3 = hh_u04c
+clonevar first_cope = hh_u04a
+
+label def copeN 1 "savings" 2 "help relatives/friends" 3 "help govt" 4 "help ngo/relig" /*
+*/ 5 "change eating patterns" 6 "seek more employment" 7 "idle family find work" 8 "migrate" /*
+*/ 9 "reduce exp. on health/ed" 10 "get credit" 11 "sell ag assets" 12 "sell durables" /*
+*/ 13 "sell land/building" 14 "sell crop stock" 15 "sell livestock" 16 "fish more" /*
+*/ 17 "send children away" 18 "spritual efforts" 19 "did nothing" 20 "other"
+lab val cope_type1 copeN
+lab val cope_type2 copeN
+lab val cope_type3 copeN
+
+* Create macros of coping types
+cnumlist "1 2 3 4 6 7 10 12 16"
+global gdcope `r(numlist)'
+cnumlist "5 9 11 13 14 15 17"
+global bdcope `r(numlist)'
+cnumlist "18 19 20"
+global othcope `r(numlist)'
+    
+g byte goodcope = inlist(hh_u04a, $gdcope) & rptShock == 1 
+g byte badcope = inlist(hh_u04a, $bdcope) & rptShock == 1
+g byte nocope = inlist(hh_u04a, 19) & rptShock == 1
+g byte praycope = inlist(hh_u04a, 18) & rptShock == 1
+
+g byte goodcope2 = inlist(hh_u04b, $gdcope) & rptShock == 1 
+g byte badcope2 = inlist(hh_u04b,  $bdcope) & rptShock == 1
+g byte othcope2 = inlist(hh_u04b, $othcope) & rptShock == 1
+
+g byte goodcope3 = inlist(hh_u04a, $gdcope) & rptShock == 1 
+g byte badcope3 = inlist(hh_u04b,  $bdcope) & rptShock == 1
+g byte othcope3 = inlist(hh_u04b, $othcope) & rptShock == 1
+
+* Plot coping strategies by shock type
+
+graph hbar (count) if rptShock == 1 & shock_sev == 1 & shock_type != 5 , /*
+*/ over(first_cope, sort(1) descending label(labsize(vsmall))) /*
+*/ blabel(bar, size(tiny)) scheme(s2mono) scale(.8)  nofill/*
+*/ by(shock_type, cols(3) iscale(*.8) title(Do nothing is /*
+*/ is the primary coping strategy for most shocks /*
+*/, size(small) color("100 100 100"))) ylabel(, labsize(vsmall))
+
+
+
+
+
+
+
+
+drop qx_type- _merge hh_u*
+
 
 * Collapse data to househld level and merge back with GIS info
 ds (hh_* shock_code shock_type visit), not
@@ -227,13 +291,13 @@ scalar s_min = 1
 scalar s_max = .
 
 * Create standard categories for shocks using WB methods
-g byte ag 		= inlist(hh_u0a, `ag') & rptShock/*& inrange(shock_sev, s_min, s_max)*/
-g byte conflict = inlist(hh_u0a, 119, 120) & rptShock/*& inrange(shock_sev, s_min, s_max)*/
-g byte disaster = inlist(hh_u0a, `disaster') & rptShock/*& inrange(shock_sev, s_min, s_max)*/
-g byte financial= inlist(hh_u0a, `fin') & rptShock/*& inrange(shock_sev, s_min, s_max)*/
-g byte health 	= inlist(hh_u0a, `health') & rptShock/*& inrange(shock_sev, s_min, s_max)*/
-g byte other 	= inlist(hh_u0a, 118, 121) & rptShock/*& inrange(shock_sev, s_min, s_max)*/
-g byte foodprice= inlist(hh_u0a, 108) & rptShock/*& inrange(shock_sev, s_min, s_max)*/
+g byte ag 		    = inlist(hh_u0a, `ag') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte conflict   = inlist(hh_u0a, 119, 120) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte disaster   = inlist(hh_u0a, `disaster') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte financial  = inlist(hh_u0a, `fin') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte health 	  = inlist(hh_u0a, `health') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte other 	    = inlist(hh_u0a, 118, 121) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte foodprice  = inlist(hh_u0a, 108) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
 
 * Create a long variable that would identify groups of shocks, strictly for plotting
 g shock_type = .
@@ -308,7 +372,7 @@ save "$pathout/shocks_wide2013.dta", replace
 export delimited "$pathxls/shocks_wide2013.csv", replace
 
 preserve
-append using  "$pathout/shocks_wide2011.dta"
+append using  "$pathout/shocks_wide2011.dta", force
 compress
 save "$pathout/shocks_all.dta", replace
 restore
@@ -326,69 +390,7 @@ reshape long shk_@, i(y2_hhid) j(shock, string)
 
 * Did not get into the following; Do you want coping mechanisms?
 bob
-/* Coping Mechanisms - What are good v. bad coping strategies? From (Heltberg et al., 2013)
-	http://siteresources.worldbank.org/EXTNWDR2013/Resources/8258024-1352909193861/
-	8936935-1356011448215/8986901-1380568255405/WDR15_bp_What_are_the_Sources_of_Risk_Oviedo.pdf
-	Good Coping: use of savings, credit, asset sales, additional employment, 
-					migration, and assistance
-	Bad Coping: increases vulnerabiliy* compromising health and edudcation 
-				expenses, productive asset sales, conumsumption reductions */
 
-label list
-/*
-           1 RELIED ON OWN-SAVINGS
-           2 RECEIVED UNCONDITIONAL HELP FROM RELATIVES / FRIENDS
-           3 RECEIVED UNCONDITIONAL HELP FROM GOVERNMENT
-           4 RECEIVED UNCONDITIONAL HELP FROM NGO / RELIGIOUS INSTITUTION
-           5 CHANGED DIETARY PATTERNS INVOLUNTARILY
-           6 EMPLOYED HOUSEHOLD MEMBERS TOOK ON MORE EMPLOYMENT
-           7 ADULT HOUSEHOLD MEMBERS WHO WERE PREVIOUSLY NOT WORKING HAD TO FIND WORK
-           8 HOUSEHOLD MEMBERS MIGRATED
-           9 REDUCED EXPENDITURES ON HEALTH AND/OR EDUCATION
-          10 OBTAINED CREDIT
-          11 SOLD AGRICULTURAL ASSETS
-          12 SOLD DURABLE ASSETS
-          13 SOLD LAND/BUILDING
-          14 SOLD CROP STOCK
-          15 SOLD LIVESTOCK
-          16 INTENSIFY FISHING
-          17 SENT CHILDREN TO LIVE ELSEWHERE
-          18 ENGAGED IN SPIRITUAL EFFORTS - PRAYER, SACRIFICES, DIVINER CONSULTATIONS
-          19 DID NOT DO ANYTHING
-          20 OTHER (SPECIFY)
-*/
-clonevar cope_type1 = hh_u04a
-clonevar cope_type2 = hh_u04b
-clonevar cope_type3 = hh_u04c
-
-label def copeN 1 "savings" 2 "help relatives/friends" 3 "help govt" 4 "help ngo/relig" /*
-*/ 5 "change eating patterns" 6 "seek more employment" 7 "idle family find work" 8 "migrate" /*
-*/ 9 "reduce exp. on health/ed" 10 "get credit" 11 "sell ag assets" 12 "sell durables" /*
-*/ 13 "sell land/building" 14 "sell crop stock" 15 "sell livestock" 16 "fish more" /*
-*/ 17 "send children away" 18 "spritual efforts" 19 "did nothing" 20 "other"
-lab val cope_type1 copeN
-lab val cope_type2 copeN
-lab val cope_type3 copeN
-
-* Create macros of coping types
-cnumlist "1 2 3 4 6 7 9 10 12 16"
-global gdcope `r(numlist)'
-cnumlist "5, 9, 11, 13, 14, 16, 17"
-global bdcope `r(numlist)'
-cnumlist "18 19 20"
-global othcope `r(numlist)'
-		
-g byte goodcope = inlist(hh_u04a, $gdcope) & rptShock == 1 
-g byte badcope = inlist(hh_u04a, $bdcope) & rptShock == 1
-g byte othcope = inlist(hh_u04a, $othcope) & rptShock == 1
-
-g byte goodcope2 = inlist(hh_u04b, $gdcope) & rptShock == 1 
-g byte badcope2 = inlist(hh_u04b,  $bdcope) & rptShock == 1
-g byte othcope2 = inlist(hh_u04b, $othcope) & rptShock == 1
-
-g byte goodcope3 = inlist(hh_u04a, $gdcope) & rptShock == 1 
-g byte badcope3 = inlist(hh_u04b,  $bdcope) & rptShock == 1
-g byte othcope3 = inlist(hh_u04b, $othcope) & rptShock == 1
 
 * Create a couple of graphics showing how households cope by shock type
 

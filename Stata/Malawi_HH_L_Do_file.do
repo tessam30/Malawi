@@ -41,7 +41,7 @@ keep `r(varlist)'
 
 qui include "$pathdo/copylabels.do"
 	ds(case_id), not
-	collapse (max) `r(varlist)', by(case_id)
+	collapse (max) `r(varlist)', by(case_id) fast
 qui include "$pathdo/attachlabels.do"
 
 order case_id `dgoods'
@@ -80,7 +80,7 @@ keep `r(varlist)'
 
 qui include "$pathdo/copylabels.do"
 	ds(y2_hhid), not
-	collapse (max) `r(varlist)', by(y2_hhid)
+	collapse (max) `r(varlist)', by(y2_hhid) fast
 qui include "$pathdo/attachlabels.do"
 
 order y2_hhid `dgoods'
