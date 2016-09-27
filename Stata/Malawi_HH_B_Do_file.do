@@ -218,6 +218,10 @@ save "$pathout/hh_dem_wave2.dta", replace
 
 * append the two datasets together
 append using "$pathout/hh_dem_wave1.dta"
+drop __000002 __000003
 sort case_id year
+
+clonevar id = case_id
+replace id = y2_hhid if id == "" & year == 2013
 save "$pathout/hh_demog_all.dta", replace
 
