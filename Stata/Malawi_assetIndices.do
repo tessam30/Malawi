@@ -51,4 +51,21 @@ g byte buyCookfw   	= inlist(cookingFuel, 2)
 g byte charCook		= inlist(cookingFuel, 3, 6, 5)
 g byte electCook	= inlist(cookingFuel, 4)
 
-g drink9
+tab drinkingWater, gen(waterSource)
+drop waterSource9 - waterSource14
+g waterSource9 = inrange(drinkingWater, 9, 14)
+la var waterSource9 "drinkingWater == Surface, tanker or other"
+
+tab toiletType, gen(toilet)
+replace toilet5 = 1 if toilet6 == 1
+
+tab rubbishDisposal, gen(garbage)
+recode bedNets (4 = 2)
+
+* Create an infrastructure, asset, ag asset and wealth index
+
+* ################
+* Infrastructure #
+* ################
+
+
