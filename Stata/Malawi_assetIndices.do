@@ -24,19 +24,19 @@ merge 1:1 id using "$pathout/hh_base_all.dta", gen(_demog)
 foreach x of varlist houseMaterial - bankAccount {
 		tab `x', mi
 }
+*end
 
-tab houseMaterial, gen(walls)
-drop walls1 walls2 walls7 walls8 walls9
-g byte walls1 = inlist(houseMaterial, 1, 2)
-g byte walls7 = inlist(houseMaterial, 7, 8, 20)
+g byte walls1 = inlist(houseMaterial, 1, 2, 7, 9)
+g byte walls2 = inlist(houseMaterial, 3)
+g byte walls3 = inlist(houseMaterial, 4)
+g byte walls4 = inlist(houseMaterial, 5)
+g byte walls5 = inlist(houseMaterial, 6, 8)
 
 g byte roofGrass = inlist(roofMaterial, 1)
-g byte roofIron  = inlist(roofMaterial, 2)
-g byte roofOther = inlist(roofMaterial, 3, 4, 5, 6)
+g byte roofIron  = inlist(roofMaterial, 1) != 1
 
-g byte floorEarth  = inlist(floorMaterial, 1, 2)
-g byte floorCement= inlist(floorMaterial, 3)
-g byte floorOther = inlist(floorMaterial, 4, 5, 6)
+g byte floorEarth  = inlist(floorMaterial, 1, 2, 4, 6)
+g byte floorCement= inlist(floorMaterial, 3, 5)
 
 g roomsPC = roomsHouse / hhsize
 
@@ -51,13 +51,19 @@ g byte buyCookfw   	= inlist(cookingFuel, 2)
 g byte charCook		= inlist(cookingFuel, 3, 6, 5)
 g byte electCook	= inlist(cookingFuel, 4)
 
-tab drinkingWater, gen(waterSource)
-drop waterSource9 - waterSource14
-g waterSource9 = inrange(drinkingWater, 9, 14)
-la var waterSource9 "drinkingWater == Surface, tanker or other"
+g waterPiped 	= inlist(drinkingWater, 1, 2)
+g waterStandPipe = inlist(drinkingWater, 3)
+g waterWellOpen = inlist(drinkingWater, 4, 5)
+g waterWellProt = inlist(drinkingWater, 6, 7)
+g waterBore		= inlist(drinkingWater, 7)
+g waterOther	= inlist(drinkingWater, 8, 9, 10, 11, 12, 14, 16)
+
 
 tab toiletType, gen(toilet)
 replace toilet5 = 1 if toilet6 == 1
+replace toilet1 = 1 if toilet2 == 1
+drop toilet2 toilet6
+
 
 tab rubbishDisposal, gen(garbage)
 recode bedNets (4 = 2)
@@ -68,4 +74,23 @@ recode bedNets (4 = 2)
 * Infrastructure #
 * ################
 
+#delimit ;
+local infra roomsPC walls1 walls2 walls3 walls4 walls5 roofGrass roofIron 
+		floorEarth floorCement roomsPC naturalFuel 
+		elecFuel gasFuel batteryFuel othFuel collectCook buyCookfw charCook 
+		electCook waterPiped waterStandPipe waterWellOpen waterWellProt 
+		waterBore waterOther
+		toilet1 toilet3 toilet4 toilet5 garbage1 
+		garbage2 garbage3 garbage4 garbage5 garbage6 ;
+#delimit cr
+
+* Verify that the data are not missing or if missing they are missing 
+* that few of them are missing
+sum `infra'
+
+factor `infra' if year == 2011 & urban == 2,  pcf factors(1)
+predict infraindex_rural_11 if e(sample) == 1
+
+pca `infra' if year == 2013 & urban == 2,  pcf factors(1)
+predict infraindex_rural_13 if e(sample) == 1
 

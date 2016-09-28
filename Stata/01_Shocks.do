@@ -182,6 +182,22 @@ g byte badcope3 = inlist(hh_u04c,  $bdcope) & rptShock == 1
 g byte nocope3 = inlist(hh_u04c, 19) & rptShock == 1
 g byte praycope3 = inlist(hh_u04c, 18) & rptShock == 1
 
+g cope_type = .
+local slist "good bad no pray"
+local i = 0
+foreach x of local slist {
+    replace cope_type = `i' if `x'cope == 1
+    local i = `++i'
+	}
+*
+la def cope 0 "Good" 1 "Bad" 2 "None" 3 "Pray" 
+la val cope_type cope
+tabsort cope_type shock_sev, mi
+
+
+* Use this part interactively to create chunks to export to 
+
+
 * Plot coping strategies by shock type
 
 * Create a sorted shock_type variable that is based on the frequency from 
