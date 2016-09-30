@@ -28,6 +28,13 @@ clonevar toiletType		= hh_f41
 clonevar rubbishDisposal= hh_f43
 clonevar bedNets		= hh_f44
 
+g byte improvedSanit = inlist(toiletType, 1, 2)
+la var improvedSanit "Improved sanitation based on JMP guidelines"
+
+label list HH_F36
+g byte improvedWater = inlist(drinkingWater, 1, 2, 3, 6, 7, 8, 9, 13)
+la var improvedWater "Improved water based on JMP guidelines"
+
 ds(visit hh_*), not
 keep `r(varlist)'
 
@@ -53,6 +60,15 @@ clonevar toiletType		= hh_f41
 clonevar rubbishDisposal= hh_f43
 clonevar bedNets		= hh_f44
 clonevar bankAccount	= hh_f48
+
+
+label list HH_F41
+g byte improvedSanit = inlist(toiletType, 1, 2)
+la var improvedSanit "Improved sanitation based on JMP guidelines"
+
+label list HH_F36
+g byte improvedWater = inlist(drinkingWater, 1, 2, 3, 6, 7, 8, 9, 13)
+la var improvedWater "Improved water based on JMP guidelines"
 
 ds(occ qx_type interview*  hh_*), not
 keep `r(varlist)'
