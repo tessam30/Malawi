@@ -75,22 +75,43 @@ recode bedNets (4 = 2)
 * ################
 
 #delimit ;
-local infra roomsPC walls1 walls2 walls3 walls4 walls5 roofGrass roofIron 
-		floorEarth floorCement roomsPC naturalFuel 
-		elecFuel gasFuel batteryFuel othFuel collectCook buyCookfw charCook 
-		electCook waterPiped waterStandPipe waterWellOpen waterWellProt 
-		waterBore waterOther
-		toilet1 toilet3 toilet4 toilet5 garbage1 
-		garbage2 garbage3 garbage4 garbage5 garbage6 ;
+global infra roomsPC walls1-walls5 roofGrass roofIron floorEarth floorCement waterPiped 
+		waterStandPipe waterWellOpen waterWellProt waterBore waterOther 
+		toilet1 toilet3 toilet4 toilet5 *Fuel;
 #delimit cr
 
 * Verify that the data are not missing or if missing they are missing 
 * that few of them are missing
-sum `infra'
+sum $infra
+
+/* A note on creating indices to be comparable across years:
+	Create indices for both panel and full sample in 2011 */
+
+* Review the different years and calculations, looking at loading plots and scree plot
+factor $infra if year == 2011, pcf
+screeplot
+loadingplot 
+
+*2011
+factor $infra if year == 2011, pcf factors(1)
+predict infra_index2011 if e(sample)
+
+
+
+factor $infra if year == 2011 & hhPanel == 1, pcf
+* 2013
+factor $infra if year == 2013 & urban == 1, pcf
+factor $infra if year == 2013 & urban == 2, pcf
+
+factor `infra' if year == 2011 & urban ==2, pcf
 
 factor `infra' if year == 2011 & urban == 2,  pcf factors(1)
 predict infraindex_rural_11 if e(sample) == 1
 
+
 pca `infra' if year == 2013 & urban == 2,  pcf factors(1)
 predict infraindex_rural_13 if e(sample) == 1
 
+roomsPC walls1-walls5 roofGrass roofIron floorEarth floorCement waterPiped waterStandPipe waterWellOpen waterWellProt waterBore
+
+factor > f year == 2013 & urban ==2, pcf
