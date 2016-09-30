@@ -46,4 +46,7 @@ save "$pathout/geovars_2013.dta", replace
 * Append datasets togther; ea_id should be the unique ID
 append using "$pathout/geovars_2011.dta"
 
+g id = case_id if year == 2011
+replace id = y2_hhid if id == "" & year == 2013
+
 save "$pathout/geovars_all.dta", replace

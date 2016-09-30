@@ -15,12 +15,14 @@ capture log close
 log using "$pathlog/01_shocks.txt", replace
 
 use "$wave1/HH_MOD_A_FILT.dta", clear
-merge 1:1 case_id using"$wave1/HouseholdGeovariables.dta", gen(hh_rost_geo)
+merge 1:1 case_id using "$wave1/HouseholdGeovariables.dta", gen(hh_rost_geo)
+
 save "$pathout/geo_hh_roster1.dta", replace
 clear
 
 * Load shock module to process
 use "$wave1/HH_MOD_U.dta", clear
+merge m:1 case_id using "$wave1/ConsumptionAggregate_2010.dta", gen(panel_tracker)
 
 * Excecute program to create macros with lists of numbers
 include "$pathdo/cnumlist.do"
@@ -136,6 +138,19 @@ la var other "Other shock (any severity)"
 la var foodprice "Price rise shock (any severity)"
 la var shock_type "type of shock shock (any severity)"
 
+
+* Create dataset for sankey diagram (800 wide by 620 high)
+preserve
+keep if shock_sev!=. & panel_tracker == 3
+keep rptShock hh_u0a hh_u02 shock_type
+* cut and paste into http://app.raw.densitydesign.org
+restore
+
+
+
+
+
+
 * Incorporate coping strategy informationuse per Brent's request
 /* Coping Mechanisms - What are good v. bad coping strategies? From (Heltberg et al., 2013)
   http://siteresources.worldbank.org/EXTNWDR2013/Resources/8258024-1352909193861/
@@ -194,10 +209,11 @@ la def cope 0 "Good" 1 "Bad" 2 "None" 3 "Pray"
 la val cope_type cope
 tabsort cope_type shock_sev, mi
 
-
 * Use this part interactively to create chunks to export to 
-
-
+preserve
+keep if shock_sev!=.
+keep rptShock cope_type hh_u04a shock_type
+restore
 * Plot coping strategies by shock type
 
 * Create a sorted shock_type variable that is based on the frequency from 
@@ -344,6 +360,15 @@ la def shocka 0 "Agricultural" 1 "Conflict" 2 "Disaster" 3 "Financial" /*
 la val shock_type shocka
 tabsort shock_type shock_sev, mi
 
+* Create dataset for sankey diagram (800 wide by 620 high)
+preserve
+keep if shock_sev!=.
+keep rptShock hh_u0a hh_u02 shock_type
+* cut and paste into http://app.raw.densitydesign.org
+restore
+
+
+
 * Create bar graph of shocks ranked by severity
 graph hbar (count) if rptShock == 1, /*
 */ over(shock_code, sort(1) descending label(labsize(vsmall))) /*
@@ -441,6 +466,27 @@ foreach v of varlist hh_u04a {
               }
      }
 }
+*end
+
+* Set up data for coping sankey
+
+g cope_type = .
+local slist "good bad no pray"
+local i = 0
+foreach x of local slist {
+    replace cope_type = `i' if `x'cope == 1
+    local i = `++i'
+	}
+*
+la def cope 0 "Good" 1 "Bad" 2 "None" 3 "Pray" 
+la val cope_type cope
+tabsort cope_type shock_sev, mi
+
+
+preserve
+keep if shock_sev!=.
+keep rptShock cope_type hh_u04a shock_type
+restore
 
 * First look at the primary coping mechanism for ANY type of shock
 graph hbar (count) if rptShock == 1  & shock_type != 5 , /*
@@ -470,10 +516,21 @@ g year = 2013
 save "$pathout/shocks_wide2013.dta", replace
 export delimited "$pathxls/shocks_wide2013.csv", replace
 
+
+
+* Create a cut for export to WVU folks.
 preserve
 append using  "$pathout/shocks_wide2011.dta", force
+
+g id = case_id if year == 2011
+replace id = y2_hhid if id == "" & year == 2013
+
 compress
 save "$pathout/shocks_all.dta", replace
+
+merge 1:1 id using "$pathout/hh_base_all.dta", gen(_geoShock)
+save "$pathexport/shocks_all_Export.dta", replace
+
 restore
 
 /*

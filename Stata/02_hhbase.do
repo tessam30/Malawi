@@ -14,6 +14,11 @@ clear
 capture log close
 log using "$pathout/hh_base.txt", replace
 
+use "$wave1/ConsumptionAggregate_2010.dta", clear
+g byte hhPanel = 1
+g year = 2011
+save "$pathout/panel_2011.dta", replace
+
 use "$wave1/ihs3_summary.dta", clear
 
 ds (rexp*), not
@@ -26,6 +31,10 @@ local klist case_id ea_id region urban area district TA strata cluster
 #delimit cr
 keep `klist'
 g year = 2011
+
+merge 1:1 case_id using "$pathout/panel_2011.dta", gen(_panel)
+replace hhPanel = 0 if _panel == 1
+drop _panel
 save "$pathout/hh_base1.dta", replace
 
 use "$wave2/ConsumptionAggregate2013.dta", replace
@@ -37,7 +46,7 @@ local klist2 y2_hhid case_id HHID ea_id region urban district strata hhweight
 #delimit cr
 keep `klist2'
 g year = 2013
-append using "$pathout/hh_base1.dta"
+append using "$pathout/hh_base1.dta", force
 
 g id = case_id if year == 2011
 replace id = y2_hhid if id == "" & year == 2013
@@ -45,4 +54,10 @@ replace id = y2_hhid if id == "" & year == 2013
 * ID will be the merge variable going forward. Eventually need to figure out a way of identifying
 * panel households.
 
+merge 1:1 id using "$pathout/geovars_all.dta", gen(_geo)
+
 save "$pathout/hh_base_all.dta", replace
+
+* Create a base roster for the panel households around in 2011
+* Use this to create flags for sub-analysis of households over time
+
