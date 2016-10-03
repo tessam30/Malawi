@@ -21,12 +21,14 @@ save "$pathout/panel_2011.dta", replace
 
 use "$wave1/ihs3_summary.dta", clear
 
+clonevar hhwgt_2011 = hhweight 
+
 ds (rexp*), not
 keep `r(varlist)'
 
 #delimit ;
 local klist case_id ea_id region urban area district TA strata cluster 
-		hhweight hhsize adulteq intmonth intyear month head_age head_gender 
+		hhweight hhwgt_2011 hhsize adulteq intmonth intyear month head_age head_gender 
 		head_edlevel head_marital;
 #delimit cr
 keep `klist'
@@ -39,8 +41,9 @@ save "$pathout/hh_base1.dta", replace
 
 use "$wave2/ConsumptionAggregate2013.dta", replace
 
+ren hhweight hhweight2013
 #delimit ;
-local klist2 y2_hhid case_id HHID ea_id region urban district strata hhweight 
+local klist2 y2_hhid case_id HHID ea_id region urban district strata hhweight2013 
 		hhweightR1 hhsize adulteq intmonth intyear panel interview_status 
 		rexpagg pcrexpagg absolute_povline extreme_povline poor epoor price_indexL;
 #delimit cr

@@ -34,6 +34,8 @@ foreach x of local agassets {
 	g total_`x' = hh_m01 if inlist(hh_m0a, `i') & hh_m0c == 1
 	replace total_`x' = 0 if total_`x' == .
 	la var total_`x' "Total `x' owned by hh"
+	display in yellow "hh_m0a `i' ==> `x'"
+
 	local i = `++i'
 	}
 *
@@ -49,6 +51,9 @@ qui include "$pathdo/copylabels.do"
 	collapse (max) `r(varlist)', by(case_id)
 qui include "$pathdo/attachlabels.do"
 
+* Sum derived assets to make sure they make sense
+sum 
+
 compress
 save "$pathout/hh_agassets2011.dta", replace
 
@@ -57,6 +62,8 @@ save "$pathout/hh_agassets2011.dta", replace
 * ###############
 
 use "$wave2/HH_MOD_M.dta", clear
+label list HH_M0B
+
 
 #delimit ;
 	local agassets hoe slasher axe sprayer pangaKnife sickle treadlePump waterCan 
@@ -69,10 +76,10 @@ display "`num'"
 
 local i = 601
 foreach x of local agassets {
-	g byte `x' = (inlist(hh_m0b, `i') & hh_m00 == 1)
+	g byte `x' = (inlist(hh_m0b, `i') & hh_m0c == 1)
 	la var `x' "hh owns `x'"
 	
-	g total_`x' = hh_m01 if inlist(hh_m0b, `i') & hh_m00 == 1
+	g total_`x' = hh_m01 if inlist(hh_m0b, `i') & hh_m0c == 1
 	replace total_`x' = 0 if total_`x' == .
 	la var total_`x' "Total `x' owned by hh"
 	display in yellow "`i' ==> `x'"
@@ -90,6 +97,10 @@ qui include "$pathdo/copylabels.do"
 	ds(y2_hhid), not
 	collapse (max) `r(varlist)', by(y2_hhid)
 qui include "$pathdo/attachlabels.do"
+
+* Sum derived assets to make sure they make sense
+sum 
+
 
 save "$pathout/hh_agassets2013.dta", replace
 append using "$pathout/hh_agassets2011.dta"

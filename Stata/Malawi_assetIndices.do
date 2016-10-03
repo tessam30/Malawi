@@ -17,6 +17,7 @@ log using "$pathlog/AssetIndices.txt", replace
 use "$pathout/hh_infra_all.dta", clear
 
 merge 1:1 id using "$pathout/hh_durables_all.dta", gen(_assets1)
+merge 1:1 id using "$pathout/hh_agassets_all.dta", gen(_agassets)
 merge 1:1 id using "$pathout/tlus_all.dta", gen(_tlus)
 merge 1:1 id using "$pathout/hh_base_all.dta", gen(_demog)
 
@@ -25,7 +26,7 @@ foreach x of varlist houseMaterial - bankAccount {
 		tab `x', mi
 }
 *end
-
+g roomsPC = roomsHouse / hhsize
 g byte walls1 = inlist(houseMaterial, 1, 2, 7, 9)
 g byte walls2 = inlist(houseMaterial, 3)
 g byte walls3 = inlist(houseMaterial, 4)
@@ -37,8 +38,6 @@ g byte roofIron  = inlist(roofMaterial, 1) != 1
 
 g byte floorEarth  = inlist(floorMaterial, 1, 2, 4, 6)
 g byte floorCement= inlist(floorMaterial, 3, 5)
-
-g roomsPC = roomsHouse / hhsize
 
 g byte naturalFuel = inlist(fuelSource, 1, 2, 3)
 g byte elecFuel	= inlist(fuelSource, 5)
@@ -55,8 +54,10 @@ g waterPiped 	= inlist(drinkingWater, 1, 2)
 g waterStandPipe = inlist(drinkingWater, 3)
 g waterWellOpen = inlist(drinkingWater, 4, 5)
 g waterWellProt = inlist(drinkingWater, 6, 7)
-g waterBore		= inlist(drinkingWater, 7)
-g waterOther	= inlist(drinkingWater, 8, 9, 10, 11, 12, 14, 16)
+g waterBore		= inlist(drinkingWater, 8)
+g waterOther	= inlist(drinkingWater, 9, 10, 11, 12, 14, 16)
+
+g byte mobile = mobilesOwned != 0 & !missing(mobilesOwned)
 
 
 tab toiletType, gen(toilet)
@@ -70,14 +71,14 @@ recode bedNets (4 = 2)
 
 * Create an infrastructure, asset, ag asset and wealth index
 
-* ################
+* ################   
 * Infrastructure #
 * ################
 
 #delimit ;
-global infra roomsPC walls1-walls5 roofGrass roofIron floorEarth floorCement waterPiped 
-		waterStandPipe waterWellOpen waterWellProt waterBore waterOther 
-		toilet1 toilet3 toilet4 toilet5 *Fuel;
+	global  infra roomsPC walls1-walls5 roofGrass roofIron floorEarth floorCement
+			waterPiped waterStandPipe waterWellOpen waterWellProt waterBore waterOther 
+			toilet1 toilet3 toilet4 toilet5 electricity;
 #delimit cr
 
 * Verify that the data are not missing or if missing they are missing 
@@ -88,30 +89,94 @@ sum $infra
 	Create indices for both panel and full sample in 2011 */
 
 * Review the different years and calculations, looking at loading plots and scree plot
-factor $infra if year == 2011, pcf
+factor $infra if year == 2011 [aweight = hhwgt_2011], pcf
 screeplot
+scoreplot
 loadingplot 
-
-*2011
-factor $infra if year == 2011, pcf factors(1)
-predict infra_index2011 if e(sample)
-
-
-
-factor $infra if year == 2011 & hhPanel == 1, pcf
-* 2013
-factor $infra if year == 2013 & urban == 1, pcf
-factor $infra if year == 2013 & urban == 2, pcf
-
-factor `infra' if year == 2011 & urban ==2, pcf
-
-factor `infra' if year == 2011 & urban == 2,  pcf factors(1)
-predict infraindex_rural_11 if e(sample) == 1
+* Now rotate factors to make them more orthogonal
+rotate
+scoreplot
+screeplot
 
 
-pca `infra' if year == 2013 & urban == 2,  pcf factors(1)
-predict infraindex_rural_13 if e(sample) == 1
+*2011 - assuming that the hhweight_2011 is the correct metric to use here
+* refresher: https://www.princeton.edu/~otorres/Factor.pdf
+* Also, reviewing code from FAO RIGA dataset and using same snippet
+factor $infra if year == 2011 [aweight = hhwgt_2011], pcf factors(1)
+predict infra_index_2011 if e(sample)
+histogram infra_index_2011, by(urban)
+la var infra_index_2011 "infrastructure index for 2011"
 
-roomsPC walls1-walls5 roofGrass roofIron floorEarth floorCement waterPiped waterStandPipe waterWellOpen waterWellProt waterBore
+factor $infra if year == 2013 [aweight = hhweight2013], pcf factors(1)
+predict infra_index_2013 if e(sample)
+histogram infra_index_2013, by(urban)
+la var infra_index_2013 "infrastructure index for 2013"
 
-factor > f year == 2013 & urban ==2, pcf
+* ############   
+* Ag assets  #
+* ############
+# delimit ;
+	global agassets hoe slasher axe sprayer pangaKnife sickle treadlePump
+	 waterCan oxCart oxPlough  
+	 cultivator motorPump grainMill chxHouse livestockKrall 
+	 poultryKrall storageHouse granary pigSty barn;
+#delimit cr
+factor $agassets if year == 2011 [aweight = hhwgt_2011], pcf factors(1)
+predict ag_index_2011 if e(sample)
+histogram ag_index_2011, by(urban)
+la var ag_index_2011 "agricultural asset index for 2011"
+
+factor $agassets if year == 2013 [aweight = hhweight2013], pcf factors(1)
+predict ag_index_2013 if e(sample)
+histogram ag_index_2013, by(urban)
+la var ag_index_2013 "agricultural asset index for 2013"
+
+* ############   
+* durables  #
+* ############
+
+# delimit ;
+	global durgoods mortar bed table chair fan radio tape tv 
+	sewingMaching  hotplat fridge bike minibus lorry beerDrum 
+	upholsteredChair coffeeTable cupboard 
+	lantern clock iron satDish; 
+#delimit cr
+
+factor $durgoods  if year == 2011 [aweight = hhwgt_2011], pcf factors(1)
+predict durables_index_2011 if e(sample)
+histogram durables_index_2011, by(urban)
+la var durables_index_2011 "durable goods index for 2011"
+
+factor $durgoods  if year == 2013  & urban == 2 [aweight = hhweight2013], pcf factors(1)
+predict durables_index_2013 if e(sample)
+histogram durables_index_2013, by(urban)
+la var durables_index_2013 "durable goods index for 2013"
+
+* ##############
+* Wealth Index #
+* ##############
+factor $infra $agassets $durgoods mobile if year == 2011 [aweight = hhwgt_2011], pcf
+predict wealth_2011 if e(sample)
+histogram wealth_2011, by(urban)
+la var wealth_2011 "Wealth index for 2011"
+
+factor $infra $agassets $durgoods mobile if year == 2013 [aweight = hhweight2013], pcf
+predict wealth_2013 if e(sample)
+histogram wealth_2013, by(urban)
+la var wealth_2013 "Wealth index for 2013"
+
+
+* This is interesting to play around with as it relates to our own Center's mandate
+* Who owns a mobile phone and who is benefitting from their expansion the most?
+* How correlated are the indices and consumption?
+g lnexp = ln(rexpagg)
+pwcorr wealth_2011 wealth_2013 lnexp, star(0.05)
+scatter wealth_2011 lnexp
+twoway(scatter wealth_2013 lnexp)(lowess wealth_2013 lnexp) if urban == 2
+
+twoway(lowess mobile wealth_2011 if urban == 2)(lowess radio wealth_2011 if urban == 2)
+twoway(lowess mobile lnexp if urban == 2)(lowess radio lnexp if urban == 2)
+
+drop walls1- waterOther
+compress
+save "$pathout/hh_base_assets.dta", replace
