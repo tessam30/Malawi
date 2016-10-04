@@ -188,4 +188,8 @@ tab FCS_categ year
 tab dietDiv year
 compress
 
+
+g id = case_id if year == 2011
+replace id = y2_hhid if id == "" & year == 2013
+
 save "$pathout/dietdiversity_all.dta", replace

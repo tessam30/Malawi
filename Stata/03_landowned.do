@@ -97,8 +97,9 @@ merge 1:1 case_id using  "`plotRainyOwn'", gen(_land2011)
 
 * Create total land owned variables
 egen double landowned = rsum(landownedDry landownedRainy)
+replace landowned = . if landowned == 0
+* Add condition so we do not overcount the total plots owned
 egen plotsOwned = rsum(plotsOwnedRainy plotsOwnedDry)
-
 sum landowned, d
 scalar  cutoff = `r(p99)'
 g avePlotSize if landowned <= cutoff = landowned / plotsOwned
@@ -207,7 +208,9 @@ merge 1:1 y2_hhid using  "`plotRainyOwn13'", gen(_land2013)
 
 * Create total land owned variables
 egen double landowned = rsum(landownedDry landownedRainy)
-egen plotsOwned = rsum(plotsOwnedRainy plotsOwnedDry)
+replace landowned = . if landowned == 0
+egen plotsOwned = rsum(plotsOwnedRainy plotsOwnedDry)  if plotsOwnedDry > 0 | plotsOwnedDry > 0 
+
 
 sum landowned, d
 scalar  cutoff = `r(p99)'
@@ -232,6 +235,9 @@ order case_id y2_hhid year
 
 clonevar id = case_id
 replace id = y2_hhid if id == "" & year == 2013
+order id
+
+order _land2013, after(_land2011)
 
 save "$pathout/ownplot_all.dta", replace
 * Merge in with the household roster for merging with other data

@@ -191,4 +191,8 @@ save "$pathout/hh_dem_modE_wave2.dta", replace
 * Append two datasets together
 append using "$pathout/hh_dem_modE_wave1.dta"
 order case_id y2_hhid
-save "$pathout/labor_all_dta", replace
+
+g id = case_id if year == 2011
+replace id = y2_hhid if id == "" & year == 2013
+
+save "$pathout/labor_all.dta", replace

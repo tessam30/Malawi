@@ -154,4 +154,8 @@ sa "$pathout/social_safetynets_2013.dta", replace
 * Append together
 append using "$pathout/social_safetynets_2011.dta"
 order case_id y2_hhid year
-save "$pathout/social_safteynets_all.dta", replace
+
+
+clonevar id = case_id
+replace id = y2_hhid if id == "" & year == 2013
+save "$pathout/social_safetynets_all.dta", replace
