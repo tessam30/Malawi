@@ -16,6 +16,25 @@ global pathout "C:/Users/student/Documents/Malawi/Dataout"
 
 * Load the dataset needed to derive household demographic variables
 use "$wave1/HH_MOD_B.dta"
+merge m:1 case_id using "$wave1/ihs3_summary.dta", keepus(region district hhsize adulteq intmonth intyear)
+drop _merge
+
+* A regular household member includes those present when the enumerator visited and a head was present
+* generate a flag for when the head is present on the 1st visit
+
+* Need a flag to determine how many visits a household had
+
+
+
+g byte hhmemb = inlist(hh_b07, 0, 1, 2, 3, 4, 5, 6, .) == 1 & visit == 1
+la var hhmemb "Usual member of household"
+
+*Keeping only subset which consist of regular household members
+*keep if hhmemb == 1
+egen hhsize2 = total(hhmemb), by(case_id)
+
+g hdif = hhsize2 - hhsize
+
 
 * Data processing 
 g byte hoh =  hh_b04 == 1
@@ -78,6 +97,65 @@ la var fsize "number of females in hh"
 g gendMix = msize/fsize
 *recode gendMix (. = 0) if fsize==0
 la var gendMix "Ratio of males to females (1 = 1:1 mix)"
+
+
+* Create categorical for age group chunks
+/* NOTE: These codes will be used throughout for demographic factors so determine
+   the cuts needed before initiating the cut; Will save time downstream.
+*/
+egen youthtmp = cut(hh_b05a), at(0, 5, 10, 12, 15, 18, 25, 31, 36, 60, 65, 100) icodes
+* replace youthtmp = 0 if und5tmp // Not needed b/c age vars were entered differently
+table youthtmp, c(min hh_b05a max hh_b05a)
+
+* Create binary variables for demographic categories
+g byte under5tmp = inlist(youthtmp, 0) 
+g byte under15tmp = inlist(youthtmp, 0, 1, 2, 3) 
+g byte under24tmp = inlist(youthtmp, 0, 1, 2, 3, 4, 5)
+g byte youth15to24tmp = inlist(youthtmp, 4, 5) 
+g byte youth18to30tmp = inlist(youthtmp, 5, 6)
+g byte youth25to35tmp = inlist(youthtmp, 6, 7) 
+g byte over35under65tmp = inlist(youthtmp, 8, 9)
+g byte over64tmp = inlist(youthtmp, 10) 
+
+* Create total, male and female totals at the household level of each demographic
+local demo under5 under15 under24 youth15to24 youth18to30 youth25to35 over35under65 over64
+foreach x of local demo {
+	egen `x'  = total(`x'tmp), by(case_id)
+	egen `x'm = total(`x'tmp) if male == 1, by(case_id)
+	egen `x'f = total(`x'tmp) if female == 1, by(case_id)
+	
+	* Replace missing values with zeros
+	replace `x' = 0 if `x' == .
+	replace `x'm = 0 if `x'm == .
+	replace `x'm = 0 if `x'm == .
+	
+	la var `x' "total hh members `x'"
+	la var `x'm "total male hh members `x'"
+	la var `x'f "total female hh members `x'"
+}
+*end
+
+/* Create intl. HH dependency ratio 
+# HH Dependecy Ratio = [(# people 0-14 + those 65+) / # people aged 15-64 ] * 100 # 
+The dependency ratio is defined as the ratio of the number of members in the age groups 
+of 14 years and above 65 years to the number of members of working age (15-64 years). 
+The ratio is normally expressed as a percentage (data below are multiplied by 100 for pcts.*/
+g byte numDepRatio = inlist(youthtmp, 4, 5, 6, 7, 8, 9) != 1
+g byte demonDepRatio = inlist(youthtmp, 4, 5, 6, 7, 8, 9) == 1
+egen totNumDepRatio = total(numDepRatio), by(case_id)
+egen totDenomDepRatio = total(demonDepRatio), by(case_id)
+
+* Check that numbers add to hhsize
+assert hhsize == totNumDepRatio+totDenomDepRatio 
+g depRatio = (totNumDepRatio/totDenomDepRatio)*100 if totDenomDepRatio!=.
+*recode depRatio (. = 0) if totDenomDepRatio==0
+la var depRatio "Dependency Ratio"
+
+
+
+
+
+
 
 * --- Education levels 
 * drop values that take on 8
