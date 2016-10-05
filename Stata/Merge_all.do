@@ -52,7 +52,7 @@ order HHID-round, after(ea_id)
 merge m:1 ea_id using "$pathout/communnal_organisation_2011.dta", gen(_comorg2011)
 merge m:1 ea_id using "$pathout/communal_organisation_2013.dta", gen(_comorg2013)
 
-replace panel_tracker = 2 if year == 2013
+replace panel_tracker = 3 if year == 2013
 la def ptrack 1 "First wave only" 2 "Second wave" 3 "First & second wave"
 la val panel_tracker ptrack
 
@@ -61,5 +61,5 @@ order _*, after(Tobacco_club_femMemb)
 drop __000000 __000001
 
 * Save in older version for compatibility
-*saveold "$pathout/MalawiIHS_analysis.dta", replace
-*export delimited "$pathexport/MalawiIHS_analysis.csv", replace
+saveold "$pathout/MalawiIHS_analysis.dta", replace
+export delimited "$pathexport/MalawiIHS_analysis.csv", replace
