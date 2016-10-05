@@ -141,4 +141,7 @@ save "$pathout/hh_dem_modC_wave2.dta", replace
 
 * append together
 append using "$pathout/hh_dem_modC_wave1.dta"
+
+clonevar id = case_id
+replace id = y2_hhid if id == "" & year == 2013
 save "$pathout/hh_dem_modC_all.dta", replace

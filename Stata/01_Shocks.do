@@ -241,7 +241,7 @@ ds (shock_code shock_type visit), not
 keep `r(varlist)'
 
 include "$pathdo/copylabels.do"
-  ds(case_id ea_id shock_sev), not
+  ds(case_id ea_id shock_sev panel rexp* pcrexp* ), not
   collapse (max) `r(varlist)', by(case_id)
 include "$pathdo/attachlabels.do"
 
@@ -255,6 +255,8 @@ la var praycope "Prayed as primary response"
 
 merge 1:1 case_id using "$pathout/geo_hh_roster1.dta", gen(geo_merge)
 gen year = 2011
+
+drop hh_a*
 save "$pathout/shocks_wide2011.dta", replace
 export delimited "$pathxls/shocks_wide2011.csv", replace
 
