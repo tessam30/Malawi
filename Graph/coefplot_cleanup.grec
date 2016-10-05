@@ -1,0 +1,73 @@
+StataFileTM:00001:01100:GREC:                          :
+00004:00004:00001:
+*! classname: twowaygraph_g
+*! family: twoway
+*! date:  5 Oct 2016
+*! time: 12:36:55
+*! graph_scheme: s1mono
+*! naturallywhite: 1
+*! end
+
+// File created by Graph Editor Recorder.
+// Edit only if you know what you are doing.
+
+.plotregion1.style.editstyle boxstyle(linestyle(color(none))) editcopy
+.plotregion1.style.editstyle inner_boxstyle(linestyle(width(none))) editcopy
+// plotregion1 edits
+
+.yaxis1.style.editstyle majorstyle(tickstyle(show_ticks(no))) editcopy
+// yaxis1 edits
+
+// yaxis1 edits
+
+// yaxis1 edits
+
+.yaxis1.style.editstyle majorstyle(tickstyle(textstyle(color("128 128 128")))) editcopy
+// yaxis1 color
+
+// yaxis1 color
+
+.xaxis1.major.label_format = `"%9.2f"'
+// xaxis1 edits
+
+.xaxis1.style.editstyle majorstyle(tickstyle(textstyle(color("128 128 128")))) editcopy
+.xaxis1.major.label_format = `"%9.0f"'
+// xaxis1 edits
+
+// xaxis1 edits
+
+.xaxis1.major.label_format = `"%9.2p"'
+// xaxis1 edits
+
+.xaxis1.major.label_format = `"%9.2fc"'
+// xaxis1 edits
+
+// xaxis1 edits
+
+.xaxis1.style.editstyle linestyle(color("128 128 128")) editcopy
+// xaxis1 color
+
+// xaxis1 color
+
+.xaxis1.style.editstyle majorstyle(tickstyle(linestyle(color("128 128 128")))) editcopy
+// xaxis1 color
+
+.plotregion1.plot2.style.editstyle marker(linestyle(color("255 255 255"))) editcopy
+// plot2 color
+
+// plot2 color
+
+.yaxis1.style.editstyle linestyle(color(none)) editcopy
+// yaxis1 color
+
+// yaxis1 color
+
+.plotregion1._xylines[1].style.editstyle linestyle(pattern(dash)) editcopy
+// line[1] (x) pattern
+
+.plotregion1._xylines[1].style.editstyle linestyle(color("128 128 128")) editcopy
+.plotregion1._xylines[1].style.editstyle linestyle(width(thin)) editcopy
+// line[1] (x) edits
+
+
+// <end>

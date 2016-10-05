@@ -8,18 +8,6 @@
 clear
 capture log close
 
-* Read in the data you are using; Use relative paths whenver possible
-/* Note: I store the raw data in two folders called wave1 and wave 2.
-I then point to them using global macros. This keeps the code general
-and allows me to port it across machines by only changing the macro and
-not any hard-coded depedencies. */
-
-/*global wave1 "C:/Users/student/Documents/Malawi/Datain/wave1"
-global wave2 "C:/Users/student/Documents/Malawi/Datain/wave2"
-global pathout "C:/Users/student/Documents/Malawi/Dataout"
-*global pathdo "C:/Users/student/Documents/GitHub/Malawi/Stata"
-*/
-
 * Load the dataset needed to derive time use and ganyu variables
 use "$wave1/HH_MOD_E.dta", clear
 
