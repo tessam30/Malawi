@@ -34,6 +34,8 @@ preserve
 		
 	* Create an export for R function
 	keep FCS cereal_days roots_days meat_days milk_days veg_days fats_days sugar_days fruit_days district latitude longitude case_id	
+	rename (cereal_days roots_days fats_days)(staples_days pulse_days oil_days)
+	tostring district, gen(District)
 	saveold "$pathout/FCS_rplot.dta", replace
 	
 restore

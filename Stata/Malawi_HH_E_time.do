@@ -13,6 +13,8 @@ use "$wave1/HH_MOD_E.dta", clear
 
 * Merge in household roster so you can determine who is head and spouse
 merge 1:1 case_id id_code using "$wave1/HH_MOD_B.dta", gen(_roster)
+merge 1:1 case_id id_code using "$pathout/hh_roster_2011.dta", gen(_rosterKeep)
+drop if _rosterKeep == 1 | _roster == 2
 
 * water time -- use hh_b04 (correct variable when making spouse/head vars)
 egen totWaterTime = total(hh_e05), by(case_id)
@@ -33,11 +35,16 @@ g ganyuTotdays = hh_e56 * hh_e57 * hh_e58 if ganyuParticipation == 1
 assert ganyuTotdays < 365 if !missing(ganyuTotdays)
 
 * What is total estimated wage of ganyu labor efforts
+clonevar ganyuWageRate = hh_e59
+sum ganyuWageRate, d
+count if ganyuWageRate > 2 * `r(p99)' & !missing(ganyuWageRate)
+winsor ganyuWageRate, gen(ganyuWR) highonly h(`r(N)')
+
 g ganyuTotWage = ganyuTotdays * hh_e59 if ganyuParticipation == 1
 
 * Check for outliers (greater than 99th percentile), replace them with
 sum ganyuTotWage, d
-g tmpmed = `r(p99)'
+scalar tmpmed = `r(p99)'
 * replace the outliers using the median value of the wage (hh_e59)
 egen medWage = median(hh_e59)
 replace ganyuTotWage = ganyuTotdays * medWage if ganyuTotWage > tmpmed & !missing(ganyuTotWage)
@@ -78,6 +85,18 @@ la var ganyuTotHHWagePC "total household ganyu wage per ganyu participant"
 la var ganyuTotHHWageLog "total household ganyu wage logged"
 la var ganyuTotHHWageLogPC "total household ganyu wage logged per ganyu participant"
 
+* Calculate a regional wage rate based on district averages
+egen ganyuDistWR = mean(ganyuWR), by(district)
+
+* Create a quick plot of the results
+mean ganyuWageRate
+	matrix smean = r(table)
+	local varmean = smean[1,1]
+mean ganyuWageRate, over(district)
+	matrix plot = r(table)'
+	matsort plot 1 "down"
+	matrix plot = plot'
+	coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,])) xline(`varmean')
 
 
 *collapse
