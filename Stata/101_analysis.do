@@ -40,13 +40,29 @@ restore
 
 * Investigate the food insecurity data
 
+* TODO: ea_id is missing for 2013 data; Need this to cluster standard errors
+
 
 g byte vulnHead = (agehead<18 | agehead >59) & !missing(agehead)
 la var vulnHead "Hoh is younger than 18 or older than 60"
 
+* Calculate land quartiles after winsorizing landowned
+winsor landowned if year == 2011, gen(landowned_cnsrd) p(0.001) highonly
+winsor landowned if year == 2013, gen(lo_cnsrd) p(0.001) highonly
+replace landowned_cnsrd = lo_cnsrd if year == 2013
+replace landowned_cnsrd = 0 if landowned == .
+
+xtile landQtile = landowned_cnsrd if year == 2011, nq(4)
+xtile lqtmp = landowned_cnsrd if year == 2013, nq(4)
+replace landQtile = lqtmp if year == 2013 
+
 * Analyze major shocks
-global demog "agehead c.agehead#c.agehead i.femhead i.marriedHoh vulnHead ib(3).religHoh
-global educ "litHead educAdult gendMix hhsize mlabor flabor
-global assets
-global geog
+global demog "agehead c.agehead#c.agehead i.femhead i.marriedHoh vulnHead"
+global educ "litHeadChich litHeadEng educAdult gendMix hhsize"
+global assets "tluTotal wealth_2013 landowned_cnsrd ib(4).landQtile"
+global geog "dist_borderpost dist_popcenter dist_road i.region" 
 global seopts "cluster(ea_id)"
+
+
+logit foodprice $demog $educ $assets $geog if year == 2011, cluster(ea_id) or
+linktest
