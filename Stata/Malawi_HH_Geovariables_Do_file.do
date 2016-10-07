@@ -8,13 +8,6 @@
 clear
 capture log close
 
-/*
-global wave1 "C:/Users/student/Documents/Malawi/Datain/wave1"
-global wave2 "C:/Users/student/Documents/Malawi/Datain/wave2"
-global pathout "C:/Users/student/Documents/Malawi/Dataout"
-*global pathdo "C:/Users/student/Documents/GitHub/Malawi/Stata"
-*/
-
 * Load the dataset needed to derive household GeographicInfo
 use "$wave1/HouseholdGeovariables.dta"
 
