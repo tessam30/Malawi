@@ -116,9 +116,11 @@ save "$pathout/hh_dem_modE_wave1.dta", replace
 * Load the dataset needed to derive time use and ganyu variables
 use "$wave2/HH_MOD_E.dta", clear
 merge 1:1 y2_hhid PID using "$wave2/HH_MOD_B.dta", gen(_roster)
+merge 1:1 y2_hhid PID using "$pathout/hh_roster_2013.dta", gen(_rosterKeep)
+drop if _rosterKeep == 1 | _roster == 2
 
 * Drop anyone who is not a regular household member
-keep if hhmember !=0
+keep if hhmember !=0 & !missing(hhmember)
 
 * water time 
 egen totWaterTime = total(hh_e05), by(y2_hhid)
@@ -137,6 +139,12 @@ egen ganyuDenom = total(ganyuParticipation), by(y2_hhid)
 g ganyuTotdays = hh_e56 * hh_e57 * hh_e58 if ganyuParticipation == 1
 * Check that no household has more than 365 days of Ganyu Labor participation
 assert ganyuTotdays < 365 if !missing(ganyuTotdays)
+
+* What is total estimated wage of ganyu labor efforts
+clonevar ganyuWageRate = hh_e59
+sum ganyuWageRate, d
+count if ganyuWageRate > 2 * `r(p99)' & !missing(ganyuWageRate)
+winsor ganyuWageRate, gen(ganyuWR) highonly h(`r(N)')
 
 * What is total estimated wage of ganyu labor efforts
 g ganyuTotWage = ganyuTotdays * hh_e59 if ganyuParticipation == 1
@@ -183,6 +191,18 @@ la var ganyuTotHHWage "total household ganyu wage"
 la var ganyuTotHHWagePC "total household ganyu wage per ganyu participant"
 la var ganyuTotHHWageLog "total household ganyu wage logged"
 la var ganyuTotHHWageLogPC "total household ganyu wage logged ganyu participant"
+
+* Create a quick plot of the results
+mean ganyuWageRate
+	matrix smean = r(table)
+	local varmean = smean[1,1]
+mean ganyuWageRate, over(district)
+	matrix plot = r(table)'
+	matsort plot 1 "down"
+	matrix plot = plot'
+	coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,])) xline(`varmean')
+
+
 
 *collapse
 qui include "$pathdo/copylabels.do"

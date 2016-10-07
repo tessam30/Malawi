@@ -12,6 +12,8 @@ clear
 * Load the dataset needed to derive education variables
 use "$wave1/HH_MOD_C.dta", clear
 merge 1:1 case_id id_code using "$wave1/HH_MOD_B.dta", gen(_roster)
+merge 1:1 case_id id_code using "$pathout/hh_roster_2011.dta", gen(_rosterKeep)
+drop if _rosterKeep == 1 | _roster == 2
 
 ** What is the purpose of the code below? What do you want it to accomplish?
 * The first 1/2 seems redundant to the demographic processing.
@@ -82,6 +84,8 @@ save "$pathout/hh_dem_modC_wave1.dta", replace
 * Load the dataset needed to derive education variables
 use "$wave2/HH_MOD_C.dta", clear
 merge 1:1 y2_hhid PID using "$wave2/HH_MOD_B.dta", gen(_roster)
+merge 1:1 y2_hhid PID using "$pathout/hh_roster_2013.dta", gen(_rosterKeep)
+drop if _rosterKeep == 1 | _roster == 2
 
 * Remove non-household members
 drop if hhmember == 0

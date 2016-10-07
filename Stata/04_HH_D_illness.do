@@ -9,6 +9,10 @@
 clear
 capture log close
 use "$wave1/HH_MOD_D.dta"
+merge 1:1 case_id id_code using "$wave1/HH_MOD_B.dta", gen(_roster)
+merge 1:1 case_id id_code using "$pathout/hh_roster_2011.dta", gen(_rosterKeep)
+drop if _rosterKeep == 1 | _roster == 2
+
 
 
 * What is itention of creating the following variables? Are you iterested
