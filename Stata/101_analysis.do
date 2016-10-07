@@ -82,7 +82,7 @@ global community "community_index_2011 dist_borderpost dist_popcenter dist_road"
 global geog " i.region i.rural"
 global geog2 "ib(206).district"
 global survey "ib(7).intmonth ib(2010).intyear" 
-global opts "if year == 2011 & hhPanel == 1"
+global opts "if year == 2011"
 global seopts "cluster(ea_id)"
 
 /* NOTE: Lilongwe is the reference distct */
@@ -168,37 +168,6 @@ foreach x of varlist ag disaster foodprice health {
 esttab ag* disaster* foodprice* health* using "$pathreg/Shocks_2013_sub.csv", star(+ 0.10 ++ 0.05 +++ 0.01) label not replace
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+*******************************************************************
+** ---------------- PArticipation in Ganyu ------------------------
+*******************************************************************
