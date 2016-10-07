@@ -305,7 +305,15 @@ compress
 save "$pathout/hh_dem_wave1.dta", replace
 
 
-** ----------------------- Wave 2 Processing----------------------------------------------------
+
+
+
+*************************************************************************************************
+** 2013 Wave
+*************************************************************************************************
+
+
+
 * Process 2nd wave 
 use "$wave2/HH_MOD_B.dta", clear
 merge m:1 y2_hhid using "$wave2/ConsumptionAggregate2013.dta", keepus(region district hhsize adulteq intmonth intyear)
@@ -547,7 +555,7 @@ append using "$pathout/hh_dem_wave1.dta"
 drop __000002 __000003
 sort y2_hhid year
 
-clonevar id = y2_hhid
+clonevar id = case_id
 replace id = y2_hhid if id == "" & year == 2013
 save "$pathout/hh_demog_all.dta", replace
 
