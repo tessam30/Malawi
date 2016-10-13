@@ -15,7 +15,7 @@ log using "$pathlog/analysis.do", replace
 
 * load custom program that calculates point estimates, sorts results and plots them.
 * TODO: Fix program syntax to be generalizable to all datasets
-include "$pathdo/pesort.do"
+include "$pathdo2/pesort.do"
 
 use "$pathout/MalawiIHS_analysis.dta", clear
 
@@ -90,7 +90,7 @@ global seopts "cluster(ea_id)"
 * --- Ag Shocks -----
 *--------------------
 est clear
-foreach x of varlist ag disaster foodprice health {
+foreach x of varlist ag disaster foodprice health anyShock {
 
 	eststo `x'1: reg `x' $demog $educ $assets $geog $opts, $seopts
 	linktest
@@ -107,7 +107,7 @@ foreach x of varlist ag disaster foodprice health {
 	
 	}
 
-esttab ag* disaster* foodprice* health* using "$pathreg/Shocks_2011.csv", star(+ 0.10 ++ 0.05 +++ 0.01) label not replace
+esttab ag* disaster* foodprice* health* anyShock* using "$pathreg/Shocks_2011.csv", star(+ 0.10 ++ 0.05 +++ 0.01) label not replace
 
 *******************************************************************
 ** ---------------- 2011 Subset ------------------------------------------
@@ -115,7 +115,7 @@ esttab ag* disaster* foodprice* health* using "$pathreg/Shocks_2011.csv", star(+
 global opts "if year == 2011 & hhPanel == 1"
 
 est clear
-foreach x of varlist ag disaster foodprice health {
+foreach x of varlist ag disaster foodprice health anyShock {
 
 	eststo `x'1: reg `x' $demog $educ $assets $geog $opts, $seopts
 	linktest
@@ -132,7 +132,7 @@ foreach x of varlist ag disaster foodprice health {
 	
 	}
 
-esttab ag* disaster* foodprice* health* using "$pathreg/Shocks_2011_sub.csv", star(+ 0.10 ++ 0.05 +++ 0.01) label not replace
+esttab ag* disaster* foodprice* health* anyShock* using "$pathreg/Shocks_2011_sub.csv", star(+ 0.10 ++ 0.05 +++ 0.01) label not replace
 
 *******************************************************************
 ** ---------------- 2013 ------------------------------------------
@@ -149,7 +149,7 @@ global opts "if year == 2013"
 global seopts "cluster(ea_id)"
 
 est clear
-foreach x of varlist ag disaster foodprice health {
+foreach x of varlist ag disaster foodprice health anyShock {
 
 	eststo `x'1: reg `x' $demog $educ $assets $geog $opts, $seopts
 	linktest
@@ -165,7 +165,7 @@ foreach x of varlist ag disaster foodprice health {
 	esttab `x'*, star(+ 0.10 ++ 0.05 +++ 0.01) label not
 	
 	}
-esttab ag* disaster* foodprice* health* using "$pathreg/Shocks_2013_sub.csv", star(+ 0.10 ++ 0.05 +++ 0.01) label not replace
+esttab ag* disaster* foodprice* health*  anyShock* using "$pathreg/Shocks_2013_sub.csv", star(+ 0.10 ++ 0.05 +++ 0.01) label not replace
 
 
 *******************************************************************
