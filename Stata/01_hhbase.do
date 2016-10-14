@@ -64,3 +64,8 @@ save "$pathout/hh_base_all.dta", replace
 * Create a base roster for the panel households around in 2011
 * Use this to create flags for sub-analysis of households over time
 
+
+* Create a district variable that you'll need downstream
+use "$wave2/HH_MOD_A_FILT.dta", clear
+keep y2_hhid district stratum
+save "$pathout/district2014.dta", replace

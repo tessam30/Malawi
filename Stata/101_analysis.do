@@ -171,3 +171,57 @@ esttab ag* disaster* foodprice* health*  anyShock* using "$pathreg/Shocks_2013_s
 *******************************************************************
 ** ---------------- PArticipation in Ganyu ------------------------
 *******************************************************************
+
+* Statistics for posters -- all using 2014 data
+preserve 
+drop if year == 2011
+* --- Shocks 2013/14
+svyset ea_id [pweight=hhweight2013], strata(district) singleunit(centered)
+svydescribe
+
+* Summarize the shocks -- Use these for official stats
+svy:mean anyShock foodprice ag disaster health 
+svy:mean anyShock foodprice ag disaster health, over(region)
+svy:mean anyShock foodprice ag disaster health, over(urban)
+svy:mean foodprice ag disaster, over( region urban)
+
+svy:mean FCS, over(region urban)
+svy:mean ganyuParticipation , over(region urban)
+svy:mean ganyuParticipation 
+
+svy:mean ganyuTotHHWagePC
+svy:mean ganyuTotHHWage
+
+g lnganyuWR = ln(ganyuWR)
+svy: mean lnganyuWR
+	matrix smean = r(table)
+	local varmean = smean[1,1]
+svy: mean lnganyuWR, over(district)
+	matrix plot = r(table)'
+	matsort plot 1 "down"
+	matrix plot = plot'
+	coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,])) xline(`varmean')
+	
+tab tot_shocks
+g byte twoOrFewerShocks = (tot_shocks <= 2)
+tab twoOrFewerShocks, mi
+
+* Run a regression on hh with two or fewer shocks
+est clear
+foreach x of varlist twoOrFewerShocks {
+
+	eststo `x'1: reg `x' $demog $educ $assets $geog $opts, $seopts
+	linktest
+	eststo `x'2: reg `x' $demog $educ $assets $community $survey $geog $opts, $seopts
+	linktest
+	eststo `x'3: reg `x' $demog $educ $assets2 $community $survey $geog $opts, $seopts
+	linktest
+	eststo `x'4: reg `x' $demog $educ $assets $community $geog2 $survey $opts, $seopts
+	linktest
+	eststo `x'5: reg `x' $demog $educ $assets2 $community $geog2 $survey $opts, $seopts
+	linktest
+	est dir
+	esttab `x'*, star(+ 0.10 ++ 0.05 +++ 0.01) label not
+	
+	}
+esttab two* using "$pathreg/Shocks_2013_sub.csv", star(+ 0.10 ++ 0.05 +++ 0.01) label not replace

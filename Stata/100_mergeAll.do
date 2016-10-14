@@ -97,7 +97,7 @@ foreach x of varlist _geo - _comindex2013 {
 
 compress
 
-
+merge 1:1 id using "C:\Users\t\Documents\Malawi\Dataout\hh_base_all.dta", keepusing(ea_id) gen(_eaid_merge)
 
 * Save in older version for compatibility
 saveold "$pathout/MalawiIHS_analysis.dta", replace
