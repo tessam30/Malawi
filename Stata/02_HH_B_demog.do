@@ -181,7 +181,7 @@ foreach x of local demo {
 /* Create intl. HH dependency ratio 
 # HH Dependecy Ratio = [(# people 0-14 + those 65+) / # people aged 15-64 ] * 100 # 
 The dependency ratio is defined as the ratio of the number of members in the age groups 
-of 14 years and above 65 years to the number of members of working age (15-64 years). 
+of under 14 years and above 65 years to the number of members of working age (15-64 years). 
 The ratio is normally expressed as a percentage (data below are multiplied by 100 for pcts.*/
 g byte numDepRatio = inlist(youthtmp, 4, 5, 6, 7, 8, 9) != 1
 g byte demonDepRatio = inlist(youthtmp, 4, 5, 6, 7, 8, 9) == 1

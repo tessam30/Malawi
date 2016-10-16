@@ -115,7 +115,7 @@ esttab ag* disaster* foodprice* health* anyShock* using "$pathreg/Shocks_2011.cs
 global opts "if year == 2011 & hhPanel == 1"
 
 est clear
-foreach x of varlist ag disaster foodprice health anyShock {
+qui foreach x of varlist ag disaster foodprice health anyShock {
 
 	eststo `x'1: reg `x' $demog $educ $assets $geog $opts, $seopts
 	linktest
@@ -149,7 +149,7 @@ global opts "if year == 2013"
 global seopts "cluster(ea_id)"
 
 est clear
-foreach x of varlist ag disaster foodprice health anyShock {
+qui foreach x of varlist ag disaster foodprice health anyShock {
 
 	eststo `x'1: reg `x' $demog $educ $assets $geog $opts, $seopts
 	linktest
@@ -171,6 +171,26 @@ esttab ag* disaster* foodprice* health*  anyShock* using "$pathreg/Shocks_2013_s
 *******************************************************************
 ** ---------------- PArticipation in Ganyu ------------------------
 *******************************************************************
+
+* What are the stats of people who participate in ganyu
+g byte t = (year == 2011)
+diff anyShock, t(ganyuParticipation) p(t) cov(agehead femhead marriedHoh /*
+*/vulnHead femCount20_34 femCount35_59 under5 youth15to24 poor epoor FCS /*
+*/ inferiorFood limitPortion reduceMeals restrictCons borrowFood foodInsecure12Months /*
+*/ litHeadChich litHeadEng educHoh educAdult educAdultsq gendMix /*
+*/ depRatio mlabor flabor hhsize tluTotal wealth_2013 ownLand mobilesOwned landowned_cnsrd /*
+*/ ag foodprice disaster goodcope badcope improvedSanit improvedWater) test
+
+
+
+
+
+
+
+
+
+
+
 
 * Statistics for posters -- all using 2014 data
 preserve 
