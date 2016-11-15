@@ -28,7 +28,7 @@ clonevar toiletType		= hh_f41
 clonevar rubbishDisposal= hh_f43
 clonevar bedNets		= hh_f44
 
-g byte improvedSanit = inlist(toiletType, 1, 2)
+g byte improvedSanit = inlist(toiletType, 1, 2) & hh_f42 == 1
 la var improvedSanit "Improved sanitation based on JMP guidelines"
 
 label list HH_F36
@@ -63,7 +63,7 @@ clonevar bankAccount	= hh_f48
 
 
 label list HH_F41
-g byte improvedSanit = inlist(toiletType, 1, 2)
+g byte improvedSanit = inlist(toiletType, 1, 2) & hh_f42 == 1
 la var improvedSanit "Improved sanitation based on JMP guidelines"
 
 label list HH_F36
