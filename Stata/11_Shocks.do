@@ -12,7 +12,7 @@
 
 clear
 capture log close 
-log using "$pathlog/01_shocks.txt", replace
+log using "$pathlog/01_shocks", replace
 
 use "$wave1/HH_MOD_A_FILT.dta", clear
 merge 1:1 case_id using "$wave1/HouseholdGeovariables.dta", gen(hh_rost_geo)
@@ -39,81 +39,81 @@ la var rptShock "Household reported a shock"
 * Create lowercase labels for the graphs
 clonevar shock_code = hh_u0a
 
-clonevar shock_sev = hh_u02
-la def severity 1 "Most severe" 2 "2nd most severe" 3 "3rd most severe"
-la val shock_sev severity 
+	clonevar shock_sev = hh_u02
+	la def severity 1 "Most severe" 2 "2nd most severe" 3 "3rd most severe"
+	la val shock_sev severity 
 
-label list HH_U0A
+	label list HH_U0A
 
 * Create new label set
-lab def shockN 101 "drought" 102 "floods" 103 "earthquakes" 104 "crop pest/disease" /*
-*/ 105 "livstock disease" 106 "low ag output price" 107 "high ag input prices" 108 "high food price" /*
-*/ 109 "remittances/aid ends" 110 "non-ag earnings fall" 111 "non-ag biz failure" 112 "salary reduced" /*
-*/ 113 "unemployed" 114 "illness/injury" 115 "birth in hh" 116 "death of income earner" /*
-*/ 117 "other death" 118 "hh break-up" 119 "theft all forms" 120 "conflict/violence" 121 "other" 
-la val shock_code shockN
+	lab def shockN 101 "drought" 102 "floods" 103 "earthquakes" 104 "crop pest/disease" /*
+	*/ 105 "livstock disease" 106 "low ag output price" 107 "high ag input prices" 108 "high food price" /*
+	*/ 109 "remittances/aid ends" 110 "non-ag earnings fall" 111 "non-ag biz failure" 112 "salary reduced" /*
+	*/ 113 "unemployed" 114 "illness/injury" 115 "birth in hh" 116 "death of income earner" /*
+	*/ 117 "other death" 118 "hh break-up" 119 "theft all forms" 120 "conflict/violence" 121 "other" 
+	la val shock_code shockN
 
-/*ag    = other crop damage; input price increase; death of livestock
-* conflit   = theft/robbery/violence
-* disaster  = drought, flood, heavy rains, landslides, fire
-* financial = loss of non-farm job
-* foodprice = price rise of food item
-* pricedown = price fall of food items
-* health  = death of hh member; illness of hh member
-* other   = loss of house; displacement; other */ 
+/*	ag   	  = other crop damage; input price increase; death of livestock
+* 	conflit   = theft/robbery/violence
+* 	disaster  = drought, flood, heavy rains, landslides, fire
+* 	financial = loss of non-farm job
+* 	foodprice = price rise of food item
+* 	pricedown = price fall of food items
+* 	health    = death of hh member; illness of hh member
+* 	other     = loss of house; displacement; other */ 
 
-cnumlist "101 102 103"
-local disaster `r(numlist)'
-cnumlist "104 105 106 107"
-local ag `r(numlist)'
-cnumlist "109 110 111 112 113"
-local fin `r(numlist)'
-cnumlist "114 115 116 117"
-local health `r(numlist)'
+	cnumlist "101 102 103"
+	local disaster `r(numlist)'
+	cnumlist "104 105 106 107"
+	local ag `r(numlist)'
+	cnumlist "109 110 111 112 113"
+	local fin `r(numlist)'
+	cnumlist "114 115 116 117"
+	local health `r(numlist)'
 
 * Create scalars to set the range of severity that will be considered for flagging shocks
-scalar s_min = 1
-scalar s_max = 2
+	scalar s_min = 1
+	scalar s_max = 2
 
 * Create standard categories for shocks using WB methods
-g byte ag     = inlist(hh_u0a, `ag') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-g byte conflict = inlist(hh_u0a, 119, 120) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-g byte disaster = inlist(hh_u0a, `disaster') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-g byte financial= inlist(hh_u0a, `fin') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-g byte health   = inlist(hh_u0a, `health') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-g byte other  = inlist(hh_u0a, 118, 121) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-g byte foodprice= inlist(hh_u0a, 108) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+	g byte ag     = inlist(hh_u0a, `ag') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+	g byte conflict = inlist(hh_u0a, 119, 120) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+	g byte disaster = inlist(hh_u0a, `disaster') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+	g byte financial= inlist(hh_u0a, `fin') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+	g byte health   = inlist(hh_u0a, `health') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+	g byte other  = inlist(hh_u0a, 118, 121) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+	g byte foodprice= inlist(hh_u0a, 108) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
 
 * Create a long variable that would identify groups of shocks, strictly for plotting
-g shock_type = .
-local slist "ag conflict disaster financial health other foodprice"
-local i = 0
-foreach x of local slist {
-    replace shock_type = `i' if `x' == 1
-    local i = `++i'
-}
-la def shocka 0 "Agricultural" 1 "Conflict" 2 "Disaster" 3 "Financial" /*
-*/ 4 "Health" 5 "Other" 6 "Food Prices"
-la val shock_type shocka
-tabsort shock_type shock_sev, mi
+	g shock_type = .
+	local slist "ag conflict disaster financial health other foodprice"
+	local i = 0
+	foreach x of local slist {
+		replace shock_type = `i' if `x' == 1
+		local i = `++i'
+	}
+	la def shocka 0 "Agricultural" 1 "Conflict" 2 "Disaster" 3 "Financial" /*
+	*/ 4 "Health" 5 "Other" 6 "Food Prices"
+	la val shock_type shocka
+	tabsort shock_type shock_sev, mi
 
 * Create bar graph of shocks ranked by severity
-graph hbar (count) if rptShock == 1, /*
-*/ over(shock_code, sort(1) descending label(labsize(vsmall))) /*
-*/ blabel(bar) scheme(s2mono) scale(.80) /*
-*/ by(shock_sev, missing cols(2) iscale(*.80) /*
-*/ title(High food and agricultural input prices are the most common and the most severe shocks/*
-*/, size(small) color("100 100 100"))) 
-graph export "$pathgraph\Shocks2011.pdf", as(pdf) replace
+	graph hbar (count) if rptShock == 1, /*
+	*/ over(shock_code, sort(1) descending label(labsize(vsmall))) /*
+	*/ blabel(bar) scheme(s2mono) scale(.80) /*
+	*/ by(shock_sev, missing cols(2) iscale(*.80) /*
+	*/ title(High food and agricultural input prices are the most common and the most severe shocks/*
+	*/, size(small) color("100 100 100"))) 
+	graph export "$pathgraph\Shocks2011.pdf", as(pdf) replace
 
 * Create bar graph of shocks ranked by severity
-graph hbar (count) if rptShock == 1, /*
-*/ over(shock_type, sort(1) descending label(labsize(vsmall))) /*
-*/ blabel(bar) scheme(s2mono) scale(.8) /*
-*/ by(shock_sev, missing cols(2) iscale(*.8) title(Food price /*
-*/ and agricultural shocks are the most common and most severe shock categories/*
-*/, size(small) color("100 100 100")))
-graph export "$pathgraph\Shock_categories2011.pdf", as(pdf) replace
+	graph hbar (count) if rptShock == 1, /*
+	*/ over(shock_type, sort(1) descending label(labsize(vsmall))) /*
+	*/ blabel(bar) scheme(s2mono) scale(.8) /*
+	*/ by(shock_sev, missing cols(2) iscale(*.8) title(Food price /*
+	*/ and agricultural shocks are the most common and most severe shock categories/*
+	*/, size(small) color("100 100 100")))
+	graph export "$pathgraph\Shock_categories2011.pdf", as(pdf) replace
 
 merge m:m case_id using "$pathout/geo_hh_roster1.dta"
 
