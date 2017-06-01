@@ -1,6 +1,6 @@
 
 ## Malawi Livelihood Anlaysis and Mapping Project  
----  
+   
 This repository contains the code and documentation for reproducing the data processing and analysis of the Livelihoods Analysis and Mapping project for Malawi.  
 
 This readme will be updated continually until the project ends.  
