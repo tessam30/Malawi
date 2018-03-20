@@ -194,34 +194,88 @@ setdiff(mwi_shape_2015$dhsregion, kids15_gis$dhsregion)
 
 # plot the shapefile for a final test
 colors_2010 <- length((unique(mwi_shape_2010$dhsregion)))
-shp_2010 <- mwi_shape_2010 %>% 
+shp_2010 <- mwi_shape_2010 %>%
   mutate(
-    lon = map_dbl(geometry, ~st_centroid(.x)[[1]]),
-    lat = map_dbl(geometry, ~st_centroid(.x)[[2]])
-  ) %>% 
-    ggplot(.) +
-  geom_sf(aes(fill = dhsregion), colour = "white")+  
-  scale_fill_manual(values = colorRampPalette(brewer.pal(12,"Set3"))(colors_2010))+
+    lon = map_dbl(geometry, ~ st_centroid(.x)[[1]]),
+    lat = map_dbl(geometry, ~ st_centroid(.x)[[2]])
+  ) %>%
+  ggplot(.) +
+  geom_sf(aes(fill = dhsregion), colour = "white") +
+  scale_fill_manual(values = colorRampPalette(brewer.pal(12, "Set3"))(colors_2010)) +
   ggtitle("Malawi by district DHS 2010") +
-  geom_text(aes(label = dhsregion, x = lon, y = lat), color = "#808080", size = 2) +
-  theme(legend.position = "none") 
+  geom_text(aes(label = dhsregion, x = lon, y = lat),
+            color = "#808080",
+            size = 2) +
+  theme(legend.position = "none")
 
 
 colors_2015 <- length((unique(mwi_shape_2015$dhsregion)))
-shp_2015 <- mwi_shape_2015 %>% 
+shp_2015 <- mwi_shape_2015 %>%
   mutate(
-    lon = map_dbl(geometry, ~st_centroid(.x)[[1]]),
-    lat = map_dbl(geometry, ~st_centroid(.x)[[2]])
-  ) %>% 
+    lon = map_dbl(geometry, ~ st_centroid(.x)[[1]]),
+    lat = map_dbl(geometry, ~ st_centroid(.x)[[2]])
+  ) %>%
   ggplot(.) +
-  geom_sf(aes(fill = dhsregion), colour = "white")+  
-  scale_fill_manual(values = colorRampPalette(brewer.pal(12,"Set3"))(colors_2015))+
+  geom_sf(aes(fill = dhsregion), colour = "white") +
+  scale_fill_manual(values = colorRampPalette(brewer.pal(12, "Set3"))(colors_2015)) +
   ggtitle("Malawi by district DHS 2015") +
-  geom_text(aes(label = dhsregion, x = lon, y = lat), color = "#808080", size = 2) +
+  geom_text(aes(label = dhsregion, x = lon, y = lat),
+            color = "#808080",
+            size = 2) +
   theme(legend.position = "none")
 
 # Combine the two maps together to view the difference -- Likoma is the main difference in 2015
 grid.arrange(shp_2010, shp_2015, nrow = 1)
 
+# Save the new shapefiles for passing to WVU
+setwd(here("GIS"))
+st_write(mwi_shape_2010, 
+         "MWI_DHS_2010.shp",
+         delete_dsn = TRUE)
 
+st_write(mwi_shape_2015, 
+         "MWI_DHS_2015.shp",
+         delete_dsn = TRUE)
+
+
+# Create a few extracts for the WVU folks to do the interpolations
+setwd(here())
+kids10_gis %>%
+  filter(elig == 1, coordflag != 1,!is.na(stunting) == 1) %>%
+  select(
+    LATNUM,
+    LONGNUM,
+    stunting,
+    stunted,
+    wasted,
+    wasting,
+    DHSCLUST,
+    ALT_GPS,
+    ALT_DEM,
+    rural,
+    svywt,
+    year,
+    dhsregion
+  ) %>%
+  write_csv(., path = here("Dataout/MWI_2010_Anthro.csv"))
+
+
+kids15_gis %>%
+  filter(elig == 1, coordflag != 1,!is.na(stunting) == 1) %>%
+  select(
+    LATNUM,
+    LONGNUM,
+    stunting,
+    stunted,
+    wasted,
+    wasting,
+    DHSCLUST,
+    ALT_GPS,
+    ALT_DEM,
+    rural,
+    svywt,
+    year,
+    dhsregion
+  ) %>%
+  write_csv(., path = here("Dataout/MWI_2015_Anthro.csv"))
 
