@@ -11,7 +11,7 @@
 */
 
 clear
-capture log close 
+capture log close
 log using "$pathlog/AssetIndices.txt", replace
 
 use "$pathout/hh_infra_all.dta", clear
@@ -71,17 +71,17 @@ recode bedNets (4 = 2)
 
 * Create an infrastructure, asset, ag asset and wealth index
 
-* ################   
+* ################
 * Infrastructure #
 * ################
 
 #delimit ;
 	global  infra roomsPC walls1-walls5 roofGrass roofIron floorEarth floorCement
-			waterPiped waterStandPipe waterWellOpen waterWellProt waterBore waterOther 
+			waterPiped waterStandPipe waterWellOpen waterWellProt waterBore waterOther
 			toilet1 toilet3 toilet4 toilet5 electricity;
 #delimit cr
 
-* Verify that the data are not missing or if missing they are missing 
+* Verify that the data are not missing or if missing they are missing
 * that few of them are missing
 sum $infra
 
@@ -92,7 +92,7 @@ sum $infra
 factor $infra if year == 2011 [aweight = hhwgt_2011], pcf
 screeplot
 scoreplot
-loadingplot 
+loadingplot
 * Now rotate factors to make them more orthogonal
 rotate
 scoreplot
@@ -112,13 +112,13 @@ predict infra_index_2013 if e(sample)
 histogram infra_index_2013, by(urban)
 la var infra_index_2013 "infrastructure index for 2013"
 
-* ############   
+* ############
 * Ag assets  #
 * ############
 # delimit ;
 	global agassets hoe slasher axe sprayer pangaKnife sickle treadlePump
-	 waterCan oxCart oxPlough  
-	 cultivator motorPump grainMill chxHouse livestockKrall 
+	 waterCan oxCart oxPlough
+	 cultivator motorPump grainMill chxHouse livestockKrall
 	 poultryKrall storageHouse granary pigSty barn;
 #delimit cr
 factor $agassets if year == 2011 [aweight = hhwgt_2011], pcf factors(1)
@@ -131,15 +131,15 @@ predict ag_index_2013 if e(sample)
 histogram ag_index_2013, by(urban)
 la var ag_index_2013 "agricultural asset index for 2013"
 
-* ############   
+* ############
 * durables  #
 * ############
 
 # delimit ;
-	global durgoods mortar bed table chair fan radio tape tv 
-	sewingMaching  hotplat fridge bike minibus lorry beerDrum 
-	upholsteredChair coffeeTable cupboard 
-	lantern clock iron satDish; 
+	global durgoods mortar bed table chair fan radio tape tv
+	sewingMaching  hotplat fridge bike minibus lorry beerDrum
+	upholsteredChair coffeeTable cupboard
+	lantern clock iron satDish;
 #delimit cr
 
 factor $durgoods  if year == 2011 [aweight = hhwgt_2011], pcf factors(1)
@@ -180,3 +180,110 @@ twoway(lowess mobile lnexp if urban == 2)(lowess radio lnexp if urban == 2)
 drop walls1- waterOther
 compress
 save "$pathout/hh_base_assets.dta", replace
+
+
+***********************************
+* Calculating separately for 2016 *
+***********************************
+use "$pathout/hh_infra_2016.dta", clear
+
+merge 1:1 case_id using "$pathout/hh_durables_2016.dta", gen(_assets1)
+merge 1:1 case_id using "$pathout/hh_agassets2016.dta", gen(_agassets)
+merge 1:1 case_id using "$pathout/tlus_2016.dta", gen(_tlus)
+merge 1:1 case_id using "$pathout/hh_base_hhlevel_2016.dta", gen(_demog)
+
+* Household asset list
+* Check the infrastructure and wash variables for variation
+foreach x of varlist houseMaterial - bedNets {
+		tab `x', mi
+}
+*end
+
+/*         1 GRASS
+           2 MUD
+           3 COMPACTED EARTH
+           4 MUD BRICK
+           5 BURNT BRICKS
+           6 CONCRETE
+           7 WOOD
+           8 IRON SHEETS
+           9 OTHER (SPECIFY)
+*/
+
+g roomsPC = roomsHouse / hhsize
+g byte walls1 = inlist(houseMaterial, 1, 2, 7, 9)
+g byte walls2 = inlist(houseMaterial, 3)
+g byte walls3 = inlist(houseMaterial, 4)
+g byte walls4 = inlist(houseMaterial, 5)
+g byte walls5 = inlist(houseMaterial, 6, 8)
+
+g byte roofGrass = inlist(roofMaterial, 1)
+* Few households are not iron or grass roof
+g byte roofIron  = inlist(roofMaterial, 2)
+
+g byte floorEarth  = inlist(floorMaterial, 1, 2, 4, 6)
+g byte floorCement= inlist(floorMaterial, 3, 5)
+
+g byte naturalFuel = inlist(fuelSource, 1, 2, 3)
+g byte elecFuel	= inlist(fuelSource, 5)
+g byte gasFuel	= inlist(fuelSource, 4, 6)
+g byte batteryFuel = inlist(fuelSource, 7)
+g byte othFuel	= inlist(fuelSource, 8, 9)
+
+g byte collectCook 	= inlist(cookingFuel, 1, 7, 8, 10)
+g byte buyCookfw   	= inlist(cookingFuel, 2)
+g byte charCook		= inlist(cookingFuel, 3, 6, 5)
+g byte electCook	= inlist(cookingFuel, 4)
+
+g waterPiped 	= inlist(drinkingWater, 1, 2)
+g waterStandPipe = inlist(drinkingWater, 3)
+g waterWellOpen = inlist(drinkingWater, 4, 5)
+g waterWellProt = inlist(drinkingWater, 6, 7)
+g waterBore		= inlist(drinkingWater, 8)
+g waterOther	= inlist(drinkingWater, 9, 10, 11, 12, 14, 15, 16)
+
+g byte mobile = mobilesOwned != 0 & !missing(mobilesOwned)
+
+* Toilets and rubbish
+tab toiletType, gen(toilet)
+replace toilet5 = 1 if toilet6 == 1
+replace toilet1 = 1 if toilet2 == 1
+drop toilet2 toilet6
+
+
+tab rubbishDisposal, gen(garbage)
+recode bedNets (2 = 0)
+recode electricity (2 = 0)
+
+* ################
+* Infrastructure #
+* ################
+
+*#delimit ;
+	global  infra roomsPC walls1-walls5 roofGrass roofIron floorEarth floorCement waterPiped waterStandPipe waterWellOpen waterWellProt waterBore waterOther  toilet1 toilet3 toilet4 toilet5 electricity
+*#delimit cr
+
+* Verify that the data are not missing or if missing they are missing
+* that few of them are missing
+sum $infra
+
+* Review the different years and calculations, looking at loading plots and scree plot
+factor $infra [aweight = hh_wgt], pcf
+screeplot
+scoreplot
+loadingplot
+* Now rotate factors to make them more orthogonal
+
+
+predict infra_index_2016 if e(sample)
+histogram infra_index_2016, by(reside)
+la var infra_index_2016 "infrastructure index for 2011"
+
+********* Ag Assets ***********
+*# delimit ;
+	global agassets hoe slasher axe sprayer pangaKnife sickle treadlePump waterCan oxCart oxPlough cultivator motorPump grainMill chxHouse livestockKrall poultryKrall storageHouse granary pigSty barn
+*#delimit cr
+factor $agassets [aweight = hh_wgt], pcf factors(1)
+predict ag_index_2011 if e(sample)
+histogram ag_index_2011, by(urban)
+la var ag_index_2011 "agricultural asset index for 2011"

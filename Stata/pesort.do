@@ -10,24 +10,17 @@
 capture program drop pesort
 program pesort, rclass 
          version 13.1
-          
-		 syntax varlist [if] [in] 
-		 marksample touse
-		 
-		 tempname smean plot
+         cap matrix drop plot smean
 		 /* Program takes two inputs, the variable to be estimated
-			and a dimension variable over which the results are sorted
-			TODO: Update to Stata syntax and add flexibility to incorporate
-			more variables.			
-			*/
+			and a dimension variable over which the results are sorted*/
 			
-		svy:mean `1' if `touse'
+		svy:mean `1'
 		matrix smean = r(table)
 		local varmean = smean[1,1]
 		local lb = smean[5, 1]
 		local ub = smean[6, 1]
 
-		svy:mean `1'  if `touse', over(`2')
+		svy:mean `1', over(`2')
 		matrix plot = r(table)'
 		matsort plot 1 "down"
 		matrix plot = plot'
