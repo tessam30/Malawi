@@ -197,7 +197,7 @@ save "$pathout/dietdiversity_all.dta", replace
 
 * ---- Wave 3 - FCS data processing
 
-use "$wave3/HH_MOD_G2.dta, replace
+use "$wave3/HH_MOD_G2.dta", clear
 
 /* NOTES: The structure of the data changed with this round. No longer
 	need to loop over alpha codes to create new variables. Can just
