@@ -193,3 +193,57 @@ g id = case_id if year == 2011
 replace id = y2_hhid if id == "" & year == 2013
 
 save "$pathout/dietdiversity_all.dta", replace
+
+
+* ---- Wave 3 - FCS data processing
+
+use "$wave3/HH_MOD_G2.dta, replace
+
+/* NOTES: The structure of the data changed with this round. No longer
+	need to loop over alpha codes to create new variables. Can just
+	clone variables and use the days straight up. */
+
+* Checking that max values fall within acceptable range
+local food "cereal roots legumes veg meat fruit milk fats sugar cond"
+local alpha "a b c d e f g h i j"
+local n: word count `food'
+
+forvalues i = 1 / `n' {
+	local a: word `i' of `food'
+	local b: word `i' of `alpha'
+	
+	clonevar `a'_days = hh_g08`b'
+	la var `a'_days "Days hh consumed `a' in last 7 days"
+	}
+*end
+egen staple_days = rowmax(cereal_days roots_days)
+
+*g cerealFCS = cereal_days * 2
+*g starchFCS = roots_days * 2
+g staplesFCS = staple_days * 2
+g legumesFCS = legumes_days * 3
+g vegFCS = veg_days
+g fruitFCS = fruit_days
+g meatFCS = meat_days * 4
+g milkFCS = milk_days * 4
+g sweetFCS = sugar_days * 0.5
+g oilFCS = fats_days * 0.5
+
+* No need to collapse data as it is reported at the household level
+egen FCS = rowtotal(staplesFCS legumesFCS vegFCS fruitFCS meatFCS milkFCS sweetFCS oilFCS), m
+tab FCS, mi
+* The assert statement will break the code b/c of the one hh w/ missing data
+*assert FCS <= 112
+histogram FCS
+
+clonevar FCS_categ = FCS 
+recode FCS_categ (0/21 = 0) (21.5/35 = 1) (35.5/53 = 2) (53.5/112 = 3)
+lab def fcscat 0 "Poor" 1 " Borderline" 2 " Acceptable low" 3 "Acceptable high"
+lab val FCS_categ fcscat
+la var FCS_categ "Food consumption score category"
+tab FCS_cat, mi
+
+tab FCS FCS_categ, mi
+
+* Keep selected variables for analysis and visualizations
+
