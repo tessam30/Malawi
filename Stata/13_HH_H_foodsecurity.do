@@ -2,7 +2,7 @@
 # Name:		00_SetupFolderGlobals
 # Purpose:	Process food insecurity module
 # Author:	Tim Essam, Ph.D.
-# Created:	2016/04/27
+# Created:	2016/04/27; 2018/04/25
 # Owner:	USAID GeoCenter | OakStream Systems, LLC
 # License:	MIT License
 # Ado(s):	see below
@@ -26,21 +26,19 @@ recode hh_h04 (2 = 0 "No")(1 = 1 "Yes"), gen(foodInsecure12Months)
 
 * Create CMC codes for the food security variables
 * Questioning starts in March 2009 and ends in March 2011
-*display 12*(2009 - 1900)+3 
+*display 12*(2009 - 1900)+3
 *display 12*(2011 - 1900)+4
 
-#delimit ;
-	local fsmonth  mar09 apr09 may09 jun09 jul09 aug09 sep09 oct09 nov09
-			dec09 jan10 feb10 mar10 apr10 may10 jun10 jul10 aug10
-			sep10 oct10 nov10 dec10 jan11 feb11 mar11;
-#delimit cr
+*#delimit ;
+	local fsmonth  mar09 apr09 may09 jun09 jul09 aug09 sep09 oct09 nov09 dec09 jan10 feb10 mar10 apr10 may10 jun10 jul10 aug10 sep10 oct10 nov10 dec10 jan11 feb11 mar11
+*#delimit cr
 local num2: list sizeof local(fsmonth)
 scalar months = `num2'
 
 
 local i = 1
 foreach x of varlist hh_h05a_01- hh_h05b_15 {
-	
+
 	local b : word `i' of `fsmonth'
 	display "`i' `b''"
 
@@ -85,22 +83,20 @@ recode hh_h04 (2 = 0 "No")(1 = 1 "Yes"), gen(foodInsecure12Months)
 
 
 
-#delimit ;
-	local fsmonth apr12 may12 jun12 jul12 aug12 sep12 oct12
-			nov12 dec12 jan13 feb13 mar13 apr13 may13 jun13 
-			jul13 aug13 sep13 oct13;
-#delimit cr
+*#delimit ;
+local fsmonth apr12 may12 jun12 jul12 aug12 sep12 oct12 nov12 dec12 jan13 feb13 mar13 apr13 may13 jun13  jul13 aug13 sep13 oct13
+*#delimit cr
 local num2: list sizeof local(fsmonth)
 scalar months = `num2'
 
 
 * Create CMC codes for the food security variables
 * Questioning starts in March 2009 and ends in March 2011
-*display 12*(2012 - 1900)+5 
+*display 12*(2012 - 1900)+5
 
 local i = 1
 foreach x of varlist hh_h05a- hh_h05s {
-	
+
 	local b : word `i' of `fsmonth'
 	display "`i' `b''"
 
@@ -137,3 +133,69 @@ replace id = y2_hhid if id == "" & year == 2013
 order finsec_mar09- finsec_mar11, before( finsec_apr12)
 
 save "$pathout/food_insecurity_all.dta", replace
+
+*************************************************
+* 2016 Food Security *
+*************************************************
+
+use "$wave3/HH_MOD_H.dta", clear
+
+recode hh_h01 (2 = 0 "No")(1 = 1 "Yes"), gen(foodInsecure7Days)
+clonevar inferiorFood = hh_h02a
+clonevar limitPortion = hh_h02b
+clonevar reduceMeals  = hh_h02c
+clonevar restrictCons = hh_h02d
+clonevar borrowFood	  = hh_h02e
+
+recode hh_h04 (2 = 0 "No")(1 = 1 "Yes"), gen(foodInsecure12Months)
+
+* NOTES: Forwhatever reason the data are now coded as "X" for all months, even for households who did have have food insecurity issues the past 25 months. This differs from the two previous waves of data collection.
+
+* Loop over months flagging if a household had food insecurity or not
+local fsmonth  apr2015 may2015 jun2015 jul2015 aug2015 sep2015 oct2015 nov2015 dec2015 jan2016 feb2016 mar2016 apr2016 may2016 jun2016 jul2016 aug2016 sep2016 oct2016 nov2016 dec2016 jan2017 feb2017 mar2017 apr2017
+local num2: list sizeof local(fsmonth)
+scalar months = `num2'
+
+
+local i = 1
+foreach x of varlist hh_h05a- hh_h05y {
+		* grab each word from local list fsmonth and create new variables from them
+		local b : word `i' of `fsmonth'
+		display "`i' `b''"
+
+		clonevar `x'_`i'= `x'
+
+		replace `x'_`i' = "1" if `x' == "X" & foodInsecure12Months == 1
+		replace `x'_`i' = "0" if `x' == "" & foodInsecure12Months == 1
+		replace `x'_`i' = "." if `x' == "X" & foodInsecure12Months == 0
+		destring `x'_`i', gen(finsec_`b')
+
+		local i = `++i'
+}
+*
+
+egen totMoFoodInsec = rsum2(finsec*)
+sum totMoFoodInsec, d
+scalar maxMo = `r(max)'
+
+la var totMoFoodInsec "Total months w/ food insecurity (out of 25 months)"
+g totMoFoodInsecShare = totMoFoodInsec/months
+la var totMoFoodInsecShare "Share of total months with food insecurity (out of 25 months)"
+*br if totMoFoodInsecShare == 1
+
+* For households that report being chronically foodInsecure (self-reported)
+g byte chronicFoodInsec = (totMoFoodInsecShare >= 0.33)
+
+* Lack of food stocks due to drought/irregular rains are the primary cause of food shortages according to households
+clonevar primaryCauseFI = hh_h06a
+clonevar secondaryCauseFI = hh_h06b
+
+tab primaryCauseFI chronicFoodInsec, mi
+
+* retain select variables for food security analysis
+ds(HHID hh_h*), not
+keep `r(varlist)'
+
+compress
+
+save "$pathout/food_insecurity2016.dta", replace

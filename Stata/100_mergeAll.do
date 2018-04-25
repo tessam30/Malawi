@@ -39,7 +39,7 @@ foreach x of local flist {
 		merge 1:1 id using "$pathout/`x'_all.dta", gen(_all_`x')
 	}
 *end
-drop __000000 __000001
+*drop __000000 __000001
 
 * Create a variable for those who own some land
 g byte ownLand = inlist(landowned, .) != 1
@@ -57,6 +57,7 @@ merge m:1 ea_id year using "$pathout/communnal_organisation_2011.dta", gen(_como
 merge m:1 ea_id year using "$pathout/communal_organisation_2013.dta", gen(_comorg2013)
 merge m:1 ea_id year using "$pathout/comm_index2011.dta", gen(_comindex2011)
 merge m:1 ea_id year using "$pathout/comm_index2013.dta", gen(_comindex2013)
+merge m:1 ea_id year using "$pathout/commShocks_2011.dta", gen(_com_Shocks2011)
 
 replace panel_tracker = 3 if year == 2013
 la def ptrack 1 "First wave only" 2 "Second wave" 3 "First & second wave"
@@ -64,6 +65,8 @@ la val panel_tracker ptrack
 
 compress
 order _*, after(Tobacco_club_femMemb)
+
+
 
 
 /* ----------  NOTE: Identify the true panel households below  * ---------------- */
@@ -97,8 +100,12 @@ foreach x of varlist _geo - _comindex2013 {
 
 compress
 
-merge 1:1 id using "$pathout\hh_base_all.dta", keepusing(ea_id) gen(_eaid_merge)
+merge 1:1 id using "$pathout/hh_base_all.dta", keepusing(ea_id) gen(_eaid_merge)
 
 * Save in older version for compatibility
 saveold "$pathout/MalawiIHS_analysis.dta", replace
 export delimited "$pathexport/MalawiIHS_analysis.csv", replace
+
+
+/* Repeat the process with the 2016 data, ensuring that all files exist */
+fs

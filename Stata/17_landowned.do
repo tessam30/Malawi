@@ -33,7 +33,7 @@ drop if ag_c00 == ""
 bys case_id ag_c00: gen id = _n
 drop if id != 1
 
-g byte ownplotRainy = inrange(ag_d03, 1, 5) 
+g byte ownplotRainy = inrange(ag_d03, 1, 5)
 keep case_id visit ea_id ag_c00 ownplotRainy
 
 merge 1:1 case_id ag_c00 using "`plotRainy'", gen(_plots)
@@ -77,7 +77,7 @@ bys case_id ag_j00: gen id = _n
 isid case_id ag_j00
 
 * Not worrying about who owns the land for now
-g byte ownplotDry = inrange(ag_k04, 1, 5) 
+g byte ownplotDry = inrange(ag_k04, 1, 5)
 keep if ownplotDry == 1
 keep case_id visit ea_id ag_j00 ownplotDry
 
@@ -143,7 +143,7 @@ drop if ag_c00 == ""
 bys y2_hhid ag_c00: gen id = _n
 drop if id != 1
 
-g byte ownplotRainy = inrange(ag_d03, 1, 5) 
+g byte ownplotRainy = inrange(ag_d03, 1, 5)
 keep y2_hhid ag_c00 ownplotRainy
 
 merge 1:1 y2_hhid ag_c00 using "`plotRainy13'", gen(_plots)
@@ -188,7 +188,7 @@ bys y2_hhid ag_j00: gen id = _n
 isid y2_hhid ag_j00
 
 * Not worrying about who owns the land for now
-g byte ownplotDry = inrange(ag_k04, 1, 5) 
+g byte ownplotDry = inrange(ag_k04, 1, 5)
 keep if ownplotDry == 1
 keep y2_hhid ag_j00 ownplotDry
 
@@ -209,7 +209,7 @@ merge 1:1 y2_hhid using  "`plotRainyOwn13'", gen(_land2013)
 * Create total land owned variables
 egen double landowned = rsum(landownedDry landownedRainy)
 replace landowned = . if landowned == 0
-egen plotsOwned = rsum(plotsOwnedRainy plotsOwnedDry)  if plotsOwnedDry > 0 | plotsOwnedDry > 0 
+egen plotsOwned = rsum(plotsOwnedRainy plotsOwnedDry)  if plotsOwnedDry > 0 | plotsOwnedDry > 0
 
 
 sum landowned, d
@@ -242,3 +242,104 @@ order _land2013, after(_land2011)
 save "$pathout/ownplot_all.dta", replace
 * Merge in with the household roster for merging with other data
 
+****************************************************
+* ---- Land owned 2016 ----
+****************************************************
+
+use "$wave3/AG_MOD_A.dta", clear
+
+* First process plot details from the rainy season
+* Cultivated land during rainy Season
+g byte rainyCultivate = (ag_b101b == 1)
+la var rainyCultivate "cultivated land during rainy season"
+
+g byte dryCultivate = (ag_i101b == 1)
+la var dryCultivate "cultivated land during dry season"
+
+keep case_id *Cultivate
+
+compress
+tempfile cultivate16
+save "`cultivate16'"
+
+
+* Gardens (consisting of plots) cultivated during rainy season
+use "$wave3/AG_MOD_B1.dta", clear
+
+* Each garden plot is uniquely identified by hh + garden ID
+isid case_id gardenid
+
+* Need to calculate size of land cultivated, share on same land as household
+clonevar gardenSize = ag_b104a
+tab ag_b104b, mi nol
+
+scalar sqmter_acre = 4046.86
+scalar hectare_acre = 2.47105
+
+* Convert gardensize variables to acres
+replace gardenSize = (ag_b104a * hectare_acre) if ag_b104b == 2
+replace gardenSize = (ag_b104a / sqmter_acre) if ag_b104b == 3
+
+g landNearHome = gardenSize if ag_b103_2a == 1
+
+* Collapse down to the household level to get total land cultivated during rainy season
+qui include "$pathdo/copylabels.do"
+	collapse (sum) gardenSize (sum) landNearHome, by(case_id)
+qui include "$pathdo/attachlabels.do"
+
+ren gardenSize landCultivatedRainy
+
+g cultLandNearShare = landNearHome / landCultivatedRainy
+la var cultLandNearShare "share of cultivated land near hh"
+
+mean landCultivatedRainy
+
+
+compress
+tempfile rainy16
+save "`rainy16'"
+
+save "$pathout/land_cultivated_rainy_2016.dta", replace
+
+
+/* NOTES: Appears that the unique plot ids are now gardenid + plotid
+	These should roll up to the case_id (hh level). So when aggregating
+	land access/cultivated, this should be the order of rollup */
+
+use "$wave3/AG_MOD_C.dta", clear
+drop if plotid == ""
+isid case_id gardenid plotid
+
+clonevar plotsizeGPS = ag_c04c
+clonevar plotsizeSRpt = ag_c04a
+
+* Convert hectares to acres (1 ha = 2.47105 acres)
+* 4046.86 square meters in an acre
+* Most plots reported in acres
+tab ag_c04b, mi
+
+
+replace plotsizeGPS = (plotsizeGPS * 2.47105) if ag_c04b == 2
+replace plotsizeSRpt = (plotsizeSRpt * 2.47105) if ag_c04b == 2
+
+replace plotsizeGPS = (plotsizeGPS / acre) if ag_c04b == 3
+replace plotsizeSRpt = (plotsizeSRpt / acre) if ag_c04b == 3
+
+qui include "$pathdo/copylabels.do"
+	collapse (sum) plotsizeGPS plotsizeSRpt, by(gardenid case_id)
+qui include "$pathdo/attachlabels.do"
+
+qui include "$pathdo/copylabels.do"
+	collapse (sum) plotsizeGPS plotsizeSRpt, by(case_id)
+qui include "$pathdo/attachlabels.do"
+
+la var plotsizeGPS "total land cultivated by hh per GPS"
+la var plotsizeSRpt "total land cultivated by hh per self reporting"
+
+pwcorr plotsizeGPS plotsizeSRpt
+scatter plotsizeGPS plotsizeSRpt
+
+compress
+g year = 2016
+
+merge 1:1 case_id using "$pathout/land_cultivated_rainy_2016.dta", gen(_plotdata)

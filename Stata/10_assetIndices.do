@@ -75,11 +75,9 @@ recode bedNets (4 = 2)
 * Infrastructure #
 * ################
 
-#delimit ;
-	global  infra roomsPC walls1-walls5 roofGrass roofIron floorEarth floorCement
-			waterPiped waterStandPipe waterWellOpen waterWellProt waterBore waterOther
-			toilet1 toilet3 toilet4 toilet5 electricity;
-#delimit cr
+*#delimit ;
+	global  infra roomsPC walls1-walls5 roofGrass roofIron floorEarth floorCement waterPiped waterStandPipe waterWellOpen waterWellProt waterBore waterOther toilet1 toilet3 toilet4 toilet5 electricity
+*#delimit cr
 
 * Verify that the data are not missing or if missing they are missing
 * that few of them are missing
@@ -115,12 +113,9 @@ la var infra_index_2013 "infrastructure index for 2013"
 * ############
 * Ag assets  #
 * ############
-# delimit ;
-	global agassets hoe slasher axe sprayer pangaKnife sickle treadlePump
-	 waterCan oxCart oxPlough
-	 cultivator motorPump grainMill chxHouse livestockKrall
-	 poultryKrall storageHouse granary pigSty barn;
-#delimit cr
+*# delimit ;
+	global agassets hoe slasher axe sprayer pangaKnife sickle treadlePump waterCan oxCart oxPlough cultivator motorPump grainMill chxHouse livestockKrall poultryKrall storageHouse granary pigSty barn
+*#delimit cr
 factor $agassets if year == 2011 [aweight = hhwgt_2011], pcf factors(1)
 predict ag_index_2011 if e(sample)
 histogram ag_index_2011, by(urban)
@@ -135,12 +130,9 @@ la var ag_index_2013 "agricultural asset index for 2013"
 * durables  #
 * ############
 
-# delimit ;
-	global durgoods mortar bed table chair fan radio tape tv
-	sewingMaching  hotplat fridge bike minibus lorry beerDrum
-	upholsteredChair coffeeTable cupboard
-	lantern clock iron satDish;
-#delimit cr
+*# delimit ;
+	global durgoods mortar bed table chair fan radio tape tv sewingMaching  hotplat fridge bike minibus lorry beerDrum upholsteredChair coffeeTable cupboard lantern clock iron satDish
+*#delimit cr
 
 factor $durgoods  if year == 2011 [aweight = hhwgt_2011], pcf factors(1)
 predict durables_index_2011 if e(sample)
@@ -277,13 +269,41 @@ loadingplot
 
 predict infra_index_2016 if e(sample)
 histogram infra_index_2016, by(reside)
-la var infra_index_2016 "infrastructure index for 2011"
+la var infra_index_2016 "infrastructure index for 2016"
 
 ********* Ag Assets ***********
+macro drop agassets
 *# delimit ;
 	global agassets hoe slasher axe sprayer pangaKnife sickle treadlePump waterCan oxCart oxPlough cultivator motorPump grainMill chxHouse livestockKrall poultryKrall storageHouse granary pigSty barn
 *#delimit cr
 factor $agassets [aweight = hh_wgt], pcf factors(1)
-predict ag_index_2011 if e(sample)
-histogram ag_index_2011, by(urban)
-la var ag_index_2011 "agricultural asset index for 2011"
+predict ag_index_2016 if e(sample)
+histogram ag_index_2016, by(reside)
+la var ag_index_2016 "agricultural asset index for 2016"
+
+
+********* durables *********
+*
+macro drop durgoods
+*# delimit ;
+	global durgoods mortar bed table chair fan radio tape tv sewingMaching hotplat fridge bike minibus lorry beerDrum upholsteredChair coffeeTable cupboard lantern clock iron satDish
+*#delimit cr
+
+factor $durgoods [aweight = hh_wgt], pcf factors(1)
+predict durables_index_2016 if e(sample)
+histogram durables_index_2016, by(reside)
+la var durables_index_2016 "durable goods index for 2016"
+
+* ##############
+* Wealth Index #
+* ##############
+factor $infra $agassets $durgoods mobile [aweight = hh_wgt], pcf
+predict wealth_2016 if e(sample)
+histogram wealth_2016, by(reside)
+la var wealth_2016 "Wealth index for 2011"
+
+twoway(lowess mobile wealth_2016 if reside == 2)(lowess radio wealth_2016 if reside == 2)
+drop walls1- garbage6
+
+compress
+save "$pathout/hh_base_assets_2016.dta", replace
