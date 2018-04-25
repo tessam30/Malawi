@@ -108,4 +108,10 @@ export delimited "$pathexport/MalawiIHS_analysis.csv", replace
 
 
 /* Repeat the process with the 2016 data, ensuring that all files exist */
-fs
+* First, list out all the files containing 2016 in their names (type below into prompt)
+fs $pathout/*2016*
+
+ 
+ 
+
+
