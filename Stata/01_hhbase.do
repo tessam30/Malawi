@@ -1,8 +1,8 @@
 /*-------------------------------------------------------------------------------
-# Name:		02_hhbase
+# Name:		02_hhbase 
 # Purpose:	create a standardized household base that you can use as a merge-into file
 # Author:	Tim Essam, Ph.D.
-# Updated:  2016/09/26
+# Updated:  2016/09/26; 2018/04/26
 # Owner:	USAID GeoCenter | OakStream Systems, LLC
 # License:	MIT License
 # Ado(s):	see below
