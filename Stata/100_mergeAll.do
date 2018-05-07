@@ -66,7 +66,7 @@ la val panel_tracker ptrack
 compress
 order _*, after(Tobacco_club_femMemb)
 
-
+drop __0*
 
 
 /* ----------  NOTE: Identify the true panel households below  * ---------------- */
@@ -104,14 +104,71 @@ merge 1:1 id using "$pathout/hh_base_all.dta", keepusing(ea_id) gen(_eaid_merge)
 
 * Save in older version for compatibility
 saveold "$pathout/MalawiIHS_analysis.dta", replace
+saveold "$pathout/MWI_IHS_2011_13.dta", replace
 export delimited "$pathexport/MalawiIHS_analysis.csv", replace
 
+clear
 
 /* Repeat the process with the 2016 data, ensuring that all files exist */
 * First, list out all the files containing 2016 in their names (type below into prompt)
-fs $pathout/*2016*
+fs $pathout/*2016* $pathout/*wave3*
 
+
+/* data sets to be merged-in
+	1) dietdiversity_2016
+	2) food_insecurity2016
+	3) geovars_2016
+	4) hh_demog_all
+	5) labor_all
+	6) land_cultivated_rainy_2016
+	7) shocks_2016
+	8) illness_2016
+	9) hh_base_assets_2016
+	10) geo_hh_roster2016
+	11) commShocks_2016
+	12) hh_dem_wave3
+	13) hh_dem_modC_wave3
+	14) hh_dem_modE_wave3
+*/
+
+* Start with the hh_assets_base as it has base variables
+
+use "$pathout/hh_base_2016.dta", clear
+
+
+* Create a loop to merge over all the required dataframes at household level
+local flist dietdiversity_2016 food_insecurity2016 hh_demog_2016 illness_2016 hh_labor_2016 shocks_2016 hh_educ_2016 hh_base_Assets_2016
+local num2: list sizeof local(flist)
+display "`num2'"
+
+foreach x of local flist {
+	
+		merge 1:1 case_id using "$pathout/`x'.dta", gen(_all_`x')
+		di in yellow "`x'"
+	}
  
- 
+* Add in data that are collected at the enumeration area level (Community characteristics)
+
+merge m:1 ea_id using "$pathout/commShocks_2016.dta" , gen(_commShocks)
+
+* Clean up some of the variables
+g intDate = date(interviewDate, "YMD")
+
+g intMonth = month(intDate)
+g intYear = year(intDate)
+g intDateMY = mdy(intMonth, 1, intYear )
+format intDateMY intDate %td
+
+lab val district district
+
+compress
+
+save "$pathout/MWI_IHS_2016.dta", replace
+
+
+
+
+
+
 
 

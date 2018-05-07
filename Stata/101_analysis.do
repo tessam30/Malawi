@@ -2,7 +2,7 @@
 # Name:		101_Analysis
 # Purpose:	Analyze shocks and participation in ganyu labor
 # Author:	Tim Essam, Ph.D.
-# Created:	2016/09/22; 2018/04/30
+# Created:	2016/09/22
 # Owner:	USAID GeoCenter | OakStream Systems, LLC
 # License:	MIT License
 # Ado(s):	see below

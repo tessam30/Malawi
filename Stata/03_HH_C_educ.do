@@ -192,4 +192,4 @@ qui include "$pathdo/attachlabels.do"
 g year = 2016
 compress
 
-save "$pathout/hh_dem_modC_wave3.dta", replace
+save "$pathout/hh_educ_2016.dta", replace

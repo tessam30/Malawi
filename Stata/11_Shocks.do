@@ -73,17 +73,25 @@ clonevar shock_code = hh_u0a
 
 * Create scalars to set the range of severity that will be considered for flagging shocks
 	scalar s_min = 1
-	scalar s_max = 2
+	scalar s_max = 3
+	global shockSev "& rptShock & inrange(shock_sev, s_min, s_max)"
+
+* Create dummies for each type of shock listed for analysis later on
+foreach num of numlist 101/121 {
+
+	g byte shock`num' = hh_u0a == `num' & rptShock & inrange(shock_sev, s_min, s_max)
+	
+	}
 
 * Create standard categories for shocks using WB methods
-	g byte ag     = inlist(hh_u0a, `ag') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-	g byte conflict = inlist(hh_u0a, 119, 120) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-	g byte disaster = inlist(hh_u0a, `disaster') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-	g byte financial= inlist(hh_u0a, `fin') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-	g byte health   = inlist(hh_u0a, `health') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-	g byte other  = inlist(hh_u0a, 118, 121) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-	g byte foodprice= inlist(hh_u0a, 108) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-
+	g byte ag     = inlist(hh_u0a, `ag') $shockSev
+	g byte conflict = inlist(hh_u0a, 119, 120) $shockSev
+	g byte disaster = inlist(hh_u0a, `disaster') $shockSev
+	g byte financial= inlist(hh_u0a, `fin') $shockSev
+	g byte health   = inlist(hh_u0a, `health') $shockSev
+	g byte other  = inlist(hh_u0a, 118, 121) $shockSev
+	g byte foodprice= inlist(hh_u0a, 108) $shockSev
+	
 * Create a long variable that would identify groups of shocks, strictly for plotting
 	g shock_type = .
 	local slist "ag conflict disaster financial health other foodprice"
@@ -337,16 +345,16 @@ local health `r(numlist)'
 
 * Create scalars to set the range of severity that will be considered for flagging shocks
 scalar s_min = 1
-scalar s_max = .
+scalar s_max = 3
 
 * Create standard categories for shocks using WB methods
-g byte ag 		    = inlist(hh_u0a, `ag') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-g byte conflict   = inlist(hh_u0a, 119, 120) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-g byte disaster   = inlist(hh_u0a, `disaster') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-g byte financial  = inlist(hh_u0a, `fin') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-g byte health 	  = inlist(hh_u0a, `health') & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-g byte other 	    = inlist(hh_u0a, 118, 121) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
-g byte foodprice  = inlist(hh_u0a, 108) & rptShock /*& inrange(shock_sev, s_min, s_max)*/
+g byte ag 		    = inlist(hh_u0a, `ag') & rptShock & inrange(shock_sev, s_min, s_max)
+g byte conflict   = inlist(hh_u0a, 119, 120) & rptShock & inrange(shock_sev, s_min, s_max)
+g byte disaster   = inlist(hh_u0a, `disaster') & rptShock & inrange(shock_sev, s_min, s_max)
+g byte financial  = inlist(hh_u0a, `fin') & rptShock & inrange(shock_sev, s_min, s_max)
+g byte health 	  = inlist(hh_u0a, `health') & rptShock & inrange(shock_sev, s_min, s_max)
+g byte other 	    = inlist(hh_u0a, 118, 121) & rptShock & inrange(shock_sev, s_min, s_max)
+g byte foodprice  = inlist(hh_u0a, 108) & rptShock & inrange(shock_sev, s_min, s_max)
 
 * Create a long variable that would identify groups of shocks, strictly for plotting
 g shock_type = .
@@ -543,8 +551,8 @@ foreach x of varlist ag conflict disaster financial health other foodprice tot_s
 reshape long shk_@, i(y2_hhid) j(shock, string)
 */
 
-
-***** 2016 Data **************
+********************************************************************************
+************** 2016 Data **************
 
 
 use "$wave3/HH_MOD_A_FILT.dta", clear
@@ -579,7 +587,7 @@ clonevar shock_sev = hh_u02
 la def severity 1 "Most severe" 2 "2nd most severe" 3 "3rd most severe"
 la var shock_sev severity
 
-*Creat new label set
+*Create new label set
 	lab def shockN2 101 "drought" 102 "floods" 103 "earthquakes" 104 "crop pest/disease" /*
 	*/ 105 "livestock disease" 106 "low ag output price" 107 "high ag input prices" 108 "high food price" /*
 	*/ 109 "remittances/aid ends" 110 "non-ag earnings fall" 111 "non-ag biz failure" 112 "salary reduced" /*
@@ -588,6 +596,8 @@ la var shock_sev severity
 	*/ 1101 "irregular rains" 1102 "landslides"
 	la val shock_code shockN2
 	
+
+
 	cnumlist "101 102 103"
 	local disaster `r(numlist)'
 	
@@ -606,6 +616,14 @@ la var shock_sev severity
 * Create scalars to set the range of severity that is used for creating shocks
 	scalar s_min = 1
 	scalar s_max = 3
+
+* Create dummy variables for each shock category itself based on severity and reporting
+
+foreach num of numlist 101/121 1101 1102 {
+
+	g byte shock`num' = hh_u0a == `num' & rptShock & inrange(shock_sev, s_min, s_max)
+	
+	}
 	
 *Create standard categories for shocks following previous calculations
 	g byte ag = inlist(hh_u0a, `ag') & rptShock & inrange(shock_sev, s_min, s_max)

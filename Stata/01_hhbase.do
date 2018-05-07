@@ -1,8 +1,8 @@
 /*-------------------------------------------------------------------------------
-# Name:		02_hhbase 
+# Name:		02_hhbase
 # Purpose:	create a standardized household base that you can use as a merge-into file
 # Author:	Tim Essam, Ph.D.
-# Updated:  2016/09/26; 2018/04/26
+# Updated:  2016/09/26
 # Owner:	USAID GeoCenter | OakStream Systems, LLC
 # License:	MIT License
 # Ado(s):	see below
@@ -103,5 +103,7 @@ qui include "$pathdo/attachlabels.do"
 merge 1:1 case_id using "$wave3/HH_MOD_A_FILT.dta"
 drop _merge hh_w01 hh_s01 hh_o0a hh_g09 hh_a13 hh_a11 hh_a06
 
+merge 1:1 case_id using "$pathout/geovars_2016.dta"
+
 compress
-save "$pathout/hh_base_hhlevel_2016.dta", replace
+save "$pathout/hh_base_2016.dta", replace

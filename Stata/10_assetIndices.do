@@ -182,7 +182,7 @@ use "$pathout/hh_infra_2016.dta", clear
 merge 1:1 case_id using "$pathout/hh_durables_2016.dta", gen(_assets1)
 merge 1:1 case_id using "$pathout/hh_agassets2016.dta", gen(_agassets)
 merge 1:1 case_id using "$pathout/tlus_2016.dta", gen(_tlus)
-merge 1:1 case_id using "$pathout/hh_base_hhlevel_2016.dta", gen(_demog)
+merge 1:1 case_id using "$pathout/hh_base_2016.dta", gen(_demog)
 
 * Household asset list
 * Check the infrastructure and wash variables for variation
@@ -303,7 +303,8 @@ histogram wealth_2016, by(reside)
 la var wealth_2016 "Wealth index for 2011"
 
 twoway(lowess mobile wealth_2016 if reside == 2)(lowess radio wealth_2016 if reside == 2)
-drop walls1- garbage6
+drop walls1- garbage6 HHID
+
 
 compress
 save "$pathout/hh_base_assets_2016.dta", replace

@@ -100,7 +100,13 @@ tab FCS_cat, mi
 g year = 2011
 sa "$pathout/dietdiv2_2011.dta", replace
 
+
+******************************************************************************
 ***** Wave 2 *****
+******************************************************************************
+
+
+
 * Process 2nd wave
 * Load the dataset needed to derive food consuption variables
 clear

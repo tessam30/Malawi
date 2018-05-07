@@ -244,7 +244,7 @@ use "$wave3/HH_MOD_E.dta", clear
 
 * Merge in household roster so you can determine who is head and spouse
 merge 1:1 case_id PID using "$wave3/HH_MOD_B.dta", gen(_roster)
-merge 1:1 case_id PID using "$pathout/hh_base_2016.dta", gen(_rosterKeep)
+merge 1:1 case_id PID using "$pathout/hh_base_indiv_2016.dta", gen(_rosterKeep)
 drop if _rosterKeep == 1 | _roster == 2
 
 * --- Time fetching totWaterTime
@@ -352,4 +352,4 @@ qui include "$pathdo/attachlabels.do"
 g year = 2016
 compress
 
-save "$pathout/hh_dem_modE_wave3.dta", replace
+save "$pathout/hh_labor_2016.dta", replace
