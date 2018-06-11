@@ -24,7 +24,7 @@ df <- df %>%
          district_fct = fct_reorder(district_fct, - totals))
 
 
-# Create a ridgeplot of the numbers over time, sorted by order
+# Create bar graphs of the numbers over time, sorted by order
 red2 <- "#caa099"
 red1 <- "#ce7160"
 p <- ggplot(df, aes(x = year, y = population)) +
