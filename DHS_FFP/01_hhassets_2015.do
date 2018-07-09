@@ -343,6 +343,6 @@ chxTLU includes all small animals (chicken, fowl, etc).*/
 merge 1:1 v001 v002 using "$DHSout/hhdemog.dta", gen(_demog)
 clonevar dhsclust = v001 
 compress
-saveold "$pathout/DHS_hhvar.dta", replace
+saveold "$DHSout/DHS_hhvar.dta", replace
 log close
 
