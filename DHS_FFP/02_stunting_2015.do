@@ -150,3 +150,5 @@ merge m:1 v001 v002 using "$DHSout/DHS_hhvar.dta", gen(_stunt)
 
 g year = 2015
 save "$DHSout/DHS_2015_analysis.dta", replace
+
+

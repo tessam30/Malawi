@@ -181,26 +181,26 @@ sum $matchar $hhchar $hhag $demog female $chldchar $chealth
 esttab sted* using "$pathout/`x'Wide.csv", wide mlabels(none) ar2 beta label replace not
 
 * by gender
-est clear
-eststo sted2_1, title("Stunted 1"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog ib(1391).intdate if female == 1, $cluster 
-eststo sted2_2, title("Stunted 2"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog ib(1391).intdate if female == 0, $cluster2 
+	est clear
+	eststo sted2_1, title("Stunted 1"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog ib(1391).intdate if female == 1, $cluster 
+	eststo sted2_2, title("Stunted 2"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog ib(1391).intdate if female == 0, $cluster2 
 
 
 
 * Regional variations
-est clear
-local i = 0
-levelsof province, local(levels)
-foreach x of local levels {
-	local name =  strtoname("`x'")
-	eststo stunt_`name', title("Stunted `x'"): reg stunting2 $matchar $hhchar /*
-	*/ $hhag $demog female $chldchar $chealth $geog if province == "`x'", $cluster 
-	local i = `++i'
-	}
-*
-esttab stunt_*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 beta
-coefplot stunt_East || stunt_North || stunt_South || stunt_West, drop(_cons ) /*
-*/ xline(0) /*mlabel format(%9.2f) mlabposition(11) mlabgap(*2)*/ byopts(row(1)) 
+	est clear
+	local i = 0
+	levelsof province, local(levels)
+	foreach x of local levels {
+		local name =  strtoname("`x'")
+		eststo stunt_`name', title("Stunted `x'"): reg stunting2 $matchar $hhchar /*
+		*/ $hhag $demog female $chldchar $chealth $geog if province == "`x'", $cluster 
+		local i = `++i'
+		}
+	*
+	esttab stunt_*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 beta
+	*coefplot stunt_East || stunt_North || stunt_South || stunt_West, drop(_cons ) /*
+	*/ xline(0) /*mlabel format(%9.2f) mlabposition(11) mlabgap(*2)*/ byopts(row(1)) 
 
 
 
