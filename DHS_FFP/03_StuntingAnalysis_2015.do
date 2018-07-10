@@ -55,9 +55,12 @@ twoway (scatter stunting2 wealth, sort mcolor("192 192 192") msize(medsmall)/*
 
 * Survey set the data to account for complex sampling design
 	svyset psu [pw = cweight], strata(strata)
-
-	*twoway (kdensity stunting2), xline(-2, lwidth(thin) /*
-	**/ lpattern(dash) lcolor("199 199 199")) by(lvdzone)
+	svydescribe
+	
+	svy:mean stunted2, over( wealthGroup ffp_focus15)
+	
+	twoway (kdensity stunting2), xline(-2, lwidth(thin) /*
+	*/ lpattern(dash) lcolor("199 199 199")) by(ffp_focus15)
 
 * Show the distribituion of education on z-scores
 	twoway (kdensity stunting2 if motherEd ==0)(kdensity stunting2 if motherEd ==1) /*
@@ -110,7 +113,7 @@ restore
 */
 
 * Consider stunting over the livelihood zones.
-	mean stunted2, over(lvdzone)
+	mean stunted2, over(ffp_focus15)
 		cap matrix drop plot smean
 		matrix smean = r(table)
 		local stuntmean = smean[1,1]
@@ -159,9 +162,10 @@ restore
 	global hhag2 "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
 	global demog "hhsize agehead hhchildUnd5"
 	global chldchar "ageChild agechildsq birthOrder birthWgt"
-	global chealth "intParasites vitaminA diarrhea anemia"
+	global chealth "intParasites diarrhea ib(3).anemia"
 	global geog "altitude2 rural ib(312).district"
-	global geog2 "altitude2 ib(1).lvdzone dist_HealthFac"
+	global geog3 "altitude2 rural"
+	global geog2 "altitude2 i.ffp_focus15"
 	global cluster "cluster(dhsclust)"
 	global cluster2 "cluster(hhgroup)"
 
@@ -171,10 +175,12 @@ sum $matchar $hhchar $hhag $demog female $chldchar $chealth
 * Be continuous versus binary
 	est clear
 	eststo sted1_0: reg stunting2  $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1391).intdate, $cluster 
+	eststo sted1_1: reg stunting2  $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1391).intdate, $cluster 
+	eststo sted1_2: reg stunting2  $matchar $hhchar $hhag $demog female $chldchar $chealth $geog3 ib(1391).intdate if ffp_focus15 == 1, $cluster 
 
-	eststo sted2_3: reg stunted2  $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1391).intdate, $cluster 
-
-	eststo sted2_5: reg extstunted2  $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1391).intdate, $cluster 
+	
+	*eststo sted2_3: reg stunted2  $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1391).intdate, $cluster 
+	*eststo sted2_5: reg extstunted2  $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1391).intdate, $cluster 
 
 	esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
 * export results to .csv

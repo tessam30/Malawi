@@ -11,6 +11,12 @@
 
 clear
 capture log close
+
+* Load and convert in DHS flagged households in the FFP Selected zones to be merged at end
+import delimited "$pathout/MWI_2010_DHS_livelihood_FFP_attributes.txt", clear
+save "$DHSout/MWI_2010_DHS_livelihood_FFP_attributes.dta", replace
+
+* Process kids stunting data for regressions
 use "$pathkids10/MWKR61FL.dta", clear
 log using "02_stunting2010", replace
 
@@ -144,11 +150,22 @@ log using "02_stunting2010", replace
 	#delimit cr
 	keep `r(varlist)'
 
+	* Clone the cluster variable so you can merge
+	clonevar dhsclust = v001
+	
+	
 	compress
 	saveold "$DHSout/DHS_child2010.dta", replace
 
 * Merge in household information and livelihood information
 	merge m:1 v001 v002 using "$DHSout/DHS_hhvar2010.dta", gen(_hhvar2010)
+	merge m:1 dhsclust using "$DHSout/MWI_2010_DHS_livelihood_FFP_attributes.dta", gen(_ffpzoi)
+	g byte ffp_focus = (_ffpzoi == 3)
+	la var ffp_focus "focus of FFP activity design"
 
 g year = 2010
 save "$DHSout/DHS_2010_analysis.dta", replace
+
+
+
+

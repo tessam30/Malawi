@@ -11,6 +11,13 @@
 
 clear
 capture log close
+
+* Load and convert in DHS flagged households in the FFP Selected zones to be merged at end
+import delimited "$pathout/MWI_2015_DHS_livelihood_FFP_attributes.txt", clear
+save "$DHSout/MWI_2015_DHS_livelihood_FFP_attributes.dta", replace
+
+* Load kids data for processing and analysis
+
 use "$pathkids/MWKR7HFL.dta", clear
 log using "$pathlog/02_stunting", replace
 
@@ -18,7 +25,7 @@ log using "$pathlog/02_stunting", replace
 	g cweight = (v005/1000000)
 	clonevar anthroTag = v042
 	keep if anthroTag == 1
-	clonevar DHSCLUST = v001
+	clonevar dhsclust = v001
 
 	clonevar stunting = hw5
 	clonevar stunting2 = hw70
@@ -137,7 +144,7 @@ log using "$pathlog/02_stunting", replace
 		birthWgtSource v001 v002 eligChild
 		ageMonGroup bmitmp motherBMI motherBWeight 
 		motherEd breastfeeding birthAtHome
-		motherEdYears DHSCLUST cweight wantedChild anemia
+		motherEdYears dhsclust cweight wantedChild anemia
 		vitaminA intParasites extstunted* orsKnowledge modernContra);
 	#delimit cr
 	keep `r(varlist)'
@@ -145,9 +152,11 @@ log using "$pathlog/02_stunting", replace
 compress
 saveold "$DHSout/DHS_child.dta", replace
 
-merge m:1 v001 v002 using "$DHSout/DHS_hhvar.dta", gen(_stunt)
-*ren DHSCLUST, lower
-
+	merge m:1 v001 v002 using "$DHSout/DHS_hhvar.dta", gen(_stunt)
+	merge m:1 dhsclust using "$DHSout/MWI_2015_DHS_livelihood_FFP_attributes.dta", gen(_ffpzoi15)
+	g byte ffp_focus15 = (_ffpzoi15 == 3)
+	la var ffp_focus15 "focus of FFP activity design"
+	
 g year = 2015
 save "$DHSout/DHS_2015_analysis.dta", replace
 
