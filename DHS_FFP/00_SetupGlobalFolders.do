@@ -96,6 +96,8 @@ global pathProducts "`dir'/FinalProducts"
 macro list 
 
 * DHS specific paths
+global pathDHS "`dir'/DHS_FFP"
+
 global pathkids "`dir'/DHS/MW_2015-16_DHS/MWKR7HDT"
 global pathwomen "`dir'/DHS/MW_2015-16_DHS/MWIR7HDT"
 global pathmen "`dir'/DHS/MW_2015-16_DHS/MWMR7HDT"

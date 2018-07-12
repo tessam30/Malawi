@@ -13,7 +13,8 @@ clear
 capture log close
 
 * Load and convert in DHS flagged households in the FFP Selected zones to be merged at end
-import delimited "$pathout/MWI_2015_DHS_livelihood_FFP_attributes.txt", clear
+import delimited "$DHSout/MWI_DHS2015_FFP_AOI_LVD.csv", clear
+ren (district lznameen) (district_lvd ffp_lvdzone)
 save "$DHSout/MWI_2015_DHS_livelihood_FFP_attributes.dta", replace
 
 * Load kids data for processing and analysis
@@ -70,6 +71,12 @@ log using "$pathlog/02_stunting", replace
 	g byte diarrhea = (h11 == 2)
 	g byte orsKnowledge = inlist(v416, 1, 2)
 	la var orsKnowledge "used ORS or heard of it"
+	
+	g byte fever = h22 == 1
+	la var fever "had fever in last two weeks"
+	
+	g byte cough = h31 == 1
+	la var cough "had cough in last two weeks"
 
 * Birth order and breastfeeding
 	clonevar precedBI 		= b11
@@ -153,7 +160,7 @@ log using "$pathlog/02_stunting", replace
 		motherEd breastfeeding birthAtHome
 		motherEdYears dhsclust cweight wantedChild anemia
 		vitaminA intParasites extstunted* orsKnowledge modernContra
-		idealChildNo rohrer_idx);
+		idealChildNo rohrer_idx cough fever);
 	#delimit cr
 	keep `r(varlist)'
 

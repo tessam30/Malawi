@@ -13,7 +13,9 @@ clear
 capture log close
 
 * Load and convert in DHS flagged households in the FFP Selected zones to be merged at end
-import delimited "$pathout/MWI_2010_DHS_livelihood_FFP_attributes.txt", clear
+import delimited "$DHSout/MWI_DHS2010_FFP_AOI_LVD.csv", clear
+ren (district lznameen) (district_lvd ffp_lvdzone)
+replace ffp_lvdzone = "Lake Chilwa - Phalombe Plain" if ffp_lvdzone == "National Park"
 save "$DHSout/MWI_2010_DHS_livelihood_FFP_attributes.dta", replace
 
 * Process kids stunting data for regressions
@@ -68,6 +70,13 @@ log using "02_stunting2010", replace
 	g byte diarrhea = (h11 == 2)
 	g byte orsKnowledge = inlist(v416, 1, 2)
 	la var orsKnowledge "used ORS or heard of it"
+	
+	g byte fever = h22 == 1
+	la var fever "had fever in last two weeks"
+	
+	g byte cough = h31 == 2
+	la var cough "had cough in last two weeks"
+	
 
 * Birth order and breastfeeding
 	clonevar precedBI 	= b11
@@ -154,7 +163,7 @@ log using "02_stunting2010", replace
 		motherEd breastfeeding birthAtHome
 		motherEdYears DHSCLUST cweight wantedChild anemia
 		vitaminA intParasites extstunted* orsKnowledge 
-		idealChildNo rohrer_idx);
+		idealChildNo rohrer_idx cough fever);
 	#delimit cr
 	keep `r(varlist)'
 
@@ -168,6 +177,7 @@ log using "02_stunting2010", replace
 * Merge in household information and livelihood information
 	merge m:1 v001 v002 using "$DHSout/DHS_hhvar2010.dta", gen(_hhvar2010)
 	merge m:1 dhsclust using "$DHSout/MWI_2010_DHS_livelihood_FFP_attributes.dta", gen(_ffpzoi)
+	
 	g byte ffp_focus = (_ffpzoi == 3)
 	la var ffp_focus "focus of FFP activity design"
 
