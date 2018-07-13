@@ -9,6 +9,12 @@
 #-------------------------------------------------------------------------------
 */
 clear
+
+
+* Source the previous files that build the analysis dataset
+include "$pathDHS/02_hhassets_2015.do"
+include "$pathDHS/04_stunting_2015.do"
+
 capture log close
 log using "$pathlog/03a_StuntingAnalysis", replace
 use "$DHSout/DHS_2015_analysis.dta", clear
@@ -27,7 +33,7 @@ use "$DHSout/DHS_2015_analysis.dta", clear
 	twoway(scatter clust_stunt strata)
 	twoway(scatter stunting2 strata)
 
-* Summary of z-scores by altitudes
+/* Summary of z-scores by altitudes
 twoway (scatter alt_stunt altitude, sort mcolor("192 192 192") msize(medsmall) /*
 	*/ msymbol(circle) mlcolor("128 128 128") mlwidth(thin)) (lpolyci alt_stunt /*
 	*/ altitude [aweight = cweight] if inrange(altitude, 0, 2508), clcolor("99 99 99") clwidth(medthin)), /*
@@ -52,7 +58,8 @@ twoway (scatter stunting2 wealth, sort mcolor("192 192 192") msize(medsmall)/*
 	*/ fysize(25) xlabel(, grid gmax) saving(hx, replace)
 * Combine graphs together to put histograms on x/y axis
 	graph combine hy.gph main.gph hx.gph, hole(3) imargin(0 0 0 0) 
-
+*/
+	
 * Survey set the data to account for complex sampling design
 	svyset psu [pw = cweight], strata(strata)
 	svydescribe
@@ -152,63 +159,84 @@ restore
 	g altitude2 = altitude/1000
 	la var altitude2 "altitude divided by 1000"
 	egen hhgroup = group(v001 v002) if eligChild == 1
-	save "$DHSout/DHS_2015_stunting.dta", replace
+
+	
+	* Create a geographic variable for the FFP livelihood areas of interest
+	encode ffp_lvdzone, gen(ffp_aois)
 
 * Create groups for covariates as they map into conceptual framework for stunting
+
 	global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
-	global hhchar "wealth improvedSanit improvedWater bnetITNuse landless"
-	global hhchar2 "mobile bankAcount improvedSanit improvedWater bnetITNuse"
+	global matchar2 "motherBWeight rohrer_idx motherEd femhead orsKnowledge"
+	global hhchar "mobile bankAcount improvedSanit improvedWater bnetITNuse landless"
+	global hhchar2 "wealth bnetITNuse"
+	global contra "modernContra ib(1).wantedChild idealChildNo"
 	global hhag "tlutotal"
-	global hhag2 "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
+	global hhag2 "cowtrad goat sheep chicken pig rabbit"
 	global demog "hhsize agehead hhchildUnd5"
-	global chldchar "ageChild agechildsq birthOrder birthWgt"
-	global chealth "intParasites diarrhea ib(3).anemia"
-	global geog "altitude2 rural ib(312).district"
-	global geog3 "altitude2 rural"
-	global geog2 "altitude2 i.ffp_focus15"
+	global chldchar "ib(3).age_group birthOrder cough fever" 
+	global chldchar2 "ageChild agechildsq birthOrder birthWgt cough fever"
+	global chealth "intParasites diarrhea anemia"
+	global geog "altitude2 rural i.ffp_focus"
+	global geog1 "altitude2 ib(1).ffp_aois"
+	global geog2 "altitude2  ib(206).district"
 	global cluster "cluster(dhsclust)"
 	global cluster2 "cluster(hhgroup)"
 
-* STOP: Check all globals for missing values!
-sum $matchar $hhchar $hhag $demog female $chldchar $chealth
-
-* Be continuous versus binary
-	est clear
-	eststo sted1_0: reg stunting2  $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1391).intdate, $cluster 
-	eststo sted1_1: reg stunting2  $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1391).intdate, $cluster 
-	eststo sted1_2: reg stunting2  $matchar $hhchar $hhag $demog female $chldchar $chealth $geog3 ib(1391).intdate if ffp_focus15 == 1, $cluster 
-
+	save "$DHSout/DHS_2015_stunting.dta", replace
 	
-	*eststo sted2_3: reg stunted2  $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1391).intdate, $cluster 
-	*eststo sted2_5: reg extstunted2  $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1391).intdate, $cluster 
+* STOP: Check all globals for missing values!
+sum $matchar $hhchar $contra $hhag $demog female $chldchar $chealth if ffp_aois
 
-	esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
+* First looka at continuous measure of malnutrition -- z-score
+est clear
+	eststo zcont_0: reg stunting2 $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog ib(1391).intdate, $cluster 
+	eststo zcont_1: reg stunting2 $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog2 ib(1391).intdate, $cluster 
+	eststo zcont_2: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar2 $chealth $geog ib(1391).intdate, $cluster 
+	eststo zcont_3: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar2 $chealth $geog2 ib(1391).intdate, $cluster 	
+
+	eststo zcont_4: reg stunting2 $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog1 ib(1391).intdate if ffp_focus, $cluster 
+	eststo zcont_5: reg stunting2 $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog1 ib(1391).intdate if ffp_focus, $cluster 
+	eststo zcont_6: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar2 $chealth $geog1 ib(1391).intdate if ffp_focus, $cluster 
+	eststo zcont_7: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar2 $chealth $geog1 ib(1391).intdate if ffp_focus, $cluster 
+	esttab zcont*, se star(* 0.10 ** 0.05 *** 0.01) ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
 * export results to .csv
-esttab sted* using "$pathout/`x'Wide.csv", wide mlabels(none) ar2 beta label replace not
-
-* by gender
-	est clear
-	eststo sted2_1, title("Stunted 1"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog ib(1391).intdate if female == 1, $cluster 
-	eststo sted2_2, title("Stunted 2"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog ib(1391).intdate if female == 0, $cluster2 
-
-
-
-* Regional variations
+	esttab zcont* using "$DHSout/MWI_stunt_results_2015.csv", wide 
+		
+*Estimate a continuous model for every ffp_aois separately, compare results
+	
 	est clear
 	local i = 0
-	levelsof province, local(levels)
+	levelsof ffp_aois, local(levels)
 	foreach x of local levels {
-		local name =  strtoname("`x'")
-		eststo stunt_`name', title("Stunted `x'"): reg stunting2 $matchar $hhchar /*
-		*/ $hhag $demog female $chldchar $chealth $geog if province == "`x'", $cluster 
-		local i = `++i'
+		eststo stunt_`x', title("Stunted `x'"): logit stunted2 $matchar $hhchar2 /*
+		*/ $hhag $demog female $chldchar $chealth if ffp_aois == `x', $cluster or
 		}
 	*
-	esttab stunt_*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 beta
-	*coefplot stunt_East || stunt_North || stunt_South || stunt_West, drop(_cons ) /*
+	esttab stunt_*, se star(* 0.10 ** 0.05 *** 0.01) ar2 eform
+	coefplot stunt_1 || stunt_2 || stunt_3 || stunt_4, drop(_cons ) /*
 	*/ xline(0) /*mlabel format(%9.2f) mlabposition(11) mlabgap(*2)*/ byopts(row(1)) 
-
-
+	
+	
+	
+* Now consider a quantile regression model where we let the coefficients vary across the quantiles of the z-scores
+	est clear
+	eststo qreg: reg stunting2 wealth $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog ib(1391).intdate, $cluster
+	
+	* Loop over groups to get results in a comparable table
+	local j = 1
+	forvalues i = 0.2(0.2)0.8 {
+		eststo qreg_`j': qui bsqreg stunting2 wealth $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog ib(1391).intdate, quantile(`i') reps(100)
+		local j = `++j'
+	}
+	*end loop
+	esttab qreg*, beta 
+	esttab qreg* using "$DHSout/MWI_stunt_qreg_2015.csv", replace
+	
+	
+	*qplot stunting2, recast(line)
+	grqreg, ci ols olsci
+	
 
 
 

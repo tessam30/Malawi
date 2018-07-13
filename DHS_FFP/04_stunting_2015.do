@@ -75,7 +75,7 @@ log using "$pathlog/02_stunting", replace
 	g byte fever = h22 == 1
 	la var fever "had fever in last two weeks"
 	
-	g byte cough = h31 == 1
+	g byte cough = h31 == 2
 	la var cough "had cough in last two weeks"
 
 * Birth order and breastfeeding

@@ -164,7 +164,8 @@ use "$DHSout/DHS_2010_analysis.dta", clear
 * Create a geographic variable for the FFP livelihood areas of interest
 	encode ffp_lvdzone, gen(ffp_aois)
 	
-bob	
+	save "$DHSout/DHS_2010_Stunting.dta", replace
+bob
 * Create groups for covariates as they map into conceptual framework for stunting
 	* -- Birthw weight is missing for quite a few of the kiddos. Drops sample for regression down to around ~3000
 	
@@ -201,7 +202,7 @@ est clear
 	eststo zcont_7: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar2 $chealth $geog1 ib(1327).intdate if ffp_focus, $cluster 
 	esttab zcont*, se star(* 0.10 ** 0.05 *** 0.01) ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
 * export results to .csv
-	esttab zcont* using "$pathout/MWI_stunt_results_2010.csv", wide 
+	esttab zcont* using "$DHSout/MWI_stunt_results_2010.csv", wide 
 		
 *Estimate a continuous model for every ffp_aois separately, compare results
 	
@@ -231,6 +232,7 @@ est clear
 	}
 	*end loop
 	esttab qreg*, beta 
+	esttab qreg* using "$DHSout/MWI_stunt_qreg_2010.csv", replace
 	
 	
 	*qplot stunting2, recast(line)
