@@ -1,0 +1,60 @@
+# Office of Food for Peace Stunting analysis
+#### By: Tim Essam, USAID GeoCenter
+#### Date: July 2018
+
+### Bottom Line Up Front: What did the analysis show? What seems to matter?
+__Mothers Health & Education__: The the general health of a mother is a strong indicator of a more nourished child. In every model, mother's birthweight (_motherBW~t_) and mother's body mass index (_motherBMI_) were positively correlated with height for age z-scores. The education of the mother (_1.motherEd_) also showed a strong, positive correlation with z-scores in most models.
+
+__Asset Ownership (Wealth Index)__: Whether looking at the composite asset index (_5.wealth~p_) or individual assets (_mobile_), children living in households with more assets had higher z-scores. Improved sanitation or toilets did not have an effect.  In the FFP priority areas, ownership and use of an insecticide treated bed net was associated with a lower likelihood of stunting.
+
+__Birth Preferences & Order__: The key family planning related variables that were significant consisted of i) whether or not a child was wanted by a mother (_1.wanted~d_) and ii) birth order (_birthorder_). Though it appears that much of the birth order effect is driven by children in the upper quintiles of z-scores. Children born to mothers indicating they did not want any more children, tended to have lower z-scores.
+
+__Sex and Age of Child__: Female children (_female_) had higher z-scores than their male counterparts in nearly all regressions. The FFP priority area models failed to detect this relationship for children in Phirilongwe Hills and the Middle Shire Valley areas, though the sign of the estimated coefficient was negative. The age category (_3.age_gr~p_) of the child appears to have a strong relationship with levels of z-scores, though the pattern is inconsistent across specifications.
+
+__Child Health__: Children who have taken drugs for intestinal parasites (_intParas~s_) in the last six months had lower z-scores across the national level models. This effect could not be consistently detected within the FFP priority areas.
+
+__Geography & Time__: Children living in households located at higher elevations (_altitude2_) have lower z-scores. This likely a proxy for poor access (to markets, health clinics, public services) that may be associated with better health outcomes. The year fixed-effect variable (_2010.year_) reflects the fact that stunting z-scores improved significantly from 2010 to 2015. It is worth noting this effect is not present in 3 of the 4 FFP priority areas -- suggesting that gains were not as prevalent outside of the Lake Chilwa - Phalombe Plain.
+
+### Full Model Results
+We looked at the stunting z-scores (height for age) from the 2010 and 2015 Demographic and Household Survey (DHS) for Malawi. Regression models were used to estimate the relationship between identified contributing factors and stunting outcomes in Malawi. The unit of analysis is all children under 5 years of age.
+
+__Interpreting the Tables__: All coefficients reported below are standardized to allow for direct comparison across covariates. The larger the coefficient, the great the marginal effect of that covariate on the stunting z-score. Standard errors are clustered at the enumeration area level. Three stars indicate significance at the 99 percentile and two stars 95th percentile. The sample size for all regression is indicated by the __N__ at the bottom of the table.
+
+__Indicator covariates__: Covariates that enter the regression model as a categorical or indicator variable start with a number. For example: _0.motherEd_ --> corresponds to _mothers who have no education_, _1.motherEd_ --> corresponds to _mothers who have a primary education_, and so on.
+If coefficient values are _0.000_ for an covariate, this indicates a base category. All comparisons within the indicator covariate should be made relative to this category.
+
+### Global Model on Pooled Data (2010 & 2015 DHS)
+We use ordinary least squares (OLS) to estimate the relationship between child z-scores and plausible contributing factors. Data from the 2010 and 2015 DHS have been pooled to estimate a model across all of Malawi.
+
+```s/
+      esttab zcont_201015_0 zcont_201015_1 zcont_201015_2 zcont_201015_3, se star(** 0.05 *** 0.01)  beta compress ar2 pr2
+```
+
+### Quantile Regression Model on Pooled Data
+Quantile regression divides the z-scores into five categories and allows covariates to vary within the quantiles. In the results below, column one corresponds to a global model using all data, whereas the remaining columns report the estimated coefficients for each of the quantiles of z-scores. For example, column two summarizes the results among children in the lowest quintile of z-scores (lowest z-scores). Column 5 reports results for children in the highest quintile of z-scores.
+
+```s/
+     esttab qreg qreg_201015*, se star(** 0.05 *** 0.01) beta compress ar2 pr2
+```
+
+### Logistic Regression for Households Located in Food For Peace Focus Areas
+The tables below differ from the two above in that they capture the results of categorizing children into two categories: stunted or not stunted. A negative (positive) coefficient indicates that a child is less (more) likely to be stunted.
+__Caveat__: Many of the FFP priority regressions have small sample sizes. When reviewing the results, please keep in mind the limitations of small sample sizes when drawing conclusions.
+
+```s/
+       esttab stunt_201015_global stunt_201015_1 stunt_201015_2 stunt_201015_3 stunt_201015_4, se star(** 0.05 *** 0.01) beta ar2 pr2 compress
+```
+Additional regression results for 2010 and 2015 are available upon request.
+
+### Tabulations of coefficients
+The tables below show cross tabulations of the covariates by year.
+
+```s
+    tab motherEd if eligChild == 1
+    tab wealthGroup year if eligChild == 1
+    tab wantedChild year if eligChild == 1
+    tab age_group year if eligChild == 1
+    tab anemia year if eligChild == 1
+    tab ffp_aois year if eligChild == 1
+
+```

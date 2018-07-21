@@ -171,7 +171,7 @@ use "$DHSout/DHS_2010_analysis.dta", clear
 	
 	
 	save "$DHSout/DHS_2010_Stunting.dta", replace
-bob
+
 * Create groups for covariates as they map into conceptual framework for stunting
 	* -- Birthw weight is missing for quite a few of the kiddos. Drops sample for regression down to around ~3000
 	
@@ -189,7 +189,6 @@ bob
 	global geog "altitude2 rural i.ffp_focus"
 	global geog1 "altitude2 ib(1).ffp_aois"
 	global geog2 "altitude2  ib(3).province"
-	global year "ib(2015).year"
 	global cluster "cluster(dhsclust)"
 	global cluster2 "cluster(hhgroup)"
 
@@ -241,7 +240,7 @@ est clear
 	
 	
 	*qplot stunting2, recast(line)
-	grqreg, ci ols olsci
+	*grqreg, ci ols olsci
 	
 	
 	

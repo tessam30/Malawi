@@ -110,24 +110,27 @@ graph dot (mean) stunted2_dist2010 stunted2_dist2015, over(district, sort(1))
 * Regression specifications -- use similar ones as used for the year by year analysis
 
 	replace ffp_focus = 1 if ffp_focus15 == 1
+	replace ffp_focus = 0 if ffp_focus15 == 0
+	
+	save "$pathDHS/MWI_DHS_2010_15_stunting.dta", replace
 
 * Create groups for covariates as they map into conceptual framework for stunting
 	* -- Birthw weight is missing for quite a few of the kiddos. Drops sample for regression down to around ~3000
 	
-	global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
-	global matchar2 "motherBWeight rohrer_idx motherEd femhead orsKnowledge"
+	global matchar "motherBWeight motherBMI ib(1).motherEd femhead orsKnowledge"
+	global matchar2 "motherBWeight rohrer_idx ib(1).motherEd femhead orsKnowledge"
 	global hhchar "mobile bankAcount improvedSanit improvedWater bnetITNuse landless"
-	global hhchar2 "wealth bnetITNuse"
+	global hhchar2 "ib(5).wealthGroup"
 	global contra "modernContra ib(1).wantedChild idealChildNo"
 	global hhag "tlutotal"
 	global hhag2 "cowtrad goat sheep chicken pig rabbit"
 	global demog "hhsize agehead hhchildUnd5"
 	global chldchar "ib(3).age_group birthOrder cough fever" 
-	global chldchar2 "ageChild agechildsq birthOrder birthWgt cough fever"
-	global chealth "intParasites vitaminA diarrhea anemia"
+	global chldchar2 "ib(3).age_group birthOrder birthWgt cough fever"
+	global chealth "intParasites diarrhea ib(4).anemia"
 	global geog "altitude2 rural i.ffp_focus"
 	global geog1 "altitude2 ib(1).ffp_aois"
-	global geog2 "altitude2  ib(206).district"
+	global geog2 "altitude2  ib(3).province"
 	global year "ib(2015).year"
 	global cluster "cluster(dhsclust)"
 	global cluster2 "cluster(hhgroup)"
@@ -137,21 +140,45 @@ graph dot (mean) stunted2_dist2010 stunted2_dist2015, over(district, sort(1))
 	sum $matchar $hhchar $hhag $demog female $chldchar $chealth $geog if eligChild == 1
 
 
-	est clear
-	eststo zcont_0: reg stunting2 $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog $year ib(1327).intdate, $cluster 
-	eststo zcont_1: reg stunting2 $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog2 $year ib(1327).intdate, $cluster 
-	eststo zcont_2: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar2 $chealth $geog $year ib(1327).intdate, $cluster 
-	eststo zcont_3: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar2 $chealth $geog2 $year ib(1327).intdate, $cluster 	
+	local year = 201015
+	eststo zcont_`year'_0: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar $chealth $geog $year, $cluster 
+	eststo zcont_`year'_1: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar $chealth $geog $year , $cluster 
+	eststo zcont_`year'_2: reg stunting2 $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog2 $year, $cluster 
+	eststo zcont_`year'_3: reg stunting2 $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog2 $year , $cluster 	
 
-	eststo zcont_4: reg stunting2 $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog1 $year ib(1327).intdate if ffp_focus, $cluster 
-	eststo zcont_5: reg stunting2 $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog1 $year ib(1327).intdate if ffp_focus, $cluster 
-	eststo zcont_6: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar2 $chealth $geog1 $year ib(1327).intdate if ffp_focus, $cluster 
-	eststo zcont_7: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar2 $chealth $geog1 $year ib(1327).intdate if ffp_focus, $cluster 
-	esttab zcont*, se star(* 0.10 ** 0.05 *** 0.01) ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
+	eststo zcont_`year'_4: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar2 $chealth $geog1 $year  if ffp_focus, $cluster 
+	eststo zcont_`year'_5: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar2 $chealth $geog1 $year  if ffp_focus, $cluster 
+	eststo zcont_`year'_6: reg stunting2 $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog1 $year  if ffp_focus, $cluster 
+	eststo zcont_`year'_7: reg stunting2 $matchar $hhchar $contra $hhag $demog female $chldchar $chealth $geog1 $year if ffp_focus, $cluster 
+	esttab zcont_`year'*, se star(* 0.10 ** 0.05 *** 0.01) ar2 pr2 beta not compress
+	esttab zcont_`year'* using "$DHSout/MWI_stunt_results_`year'.csv",  ar2 pr2 beta not replace
 	
+
+	eststo stunt_`year'_global: logit stunted2 $matchar $hhchar /*
+		*/ $hhag $demog female $chldchar $chealth $year if ffp_focus == 1
+	local i = 0
+	levelsof ffp_aois, local(levels)
+	foreach x of local levels {
+		eststo stunt_`year'_`x', title("Stunted `x'"): logit stunted2 $matchar $hhchar /*
+		*/ $hhag $demog female $chldchar $chealth $year if ffp_aois == `x', $cluster or
+		}
+	*
+	esttab stunt_`year'_*, se star(* 0.10 ** 0.05 *** 0.01)  ar2 
+	*coefplot stunt_1 || stunt_2 || stunt_3 || stunt_4, drop(_cons ) /*
+	**/ xline(0) /*mlabel format(%9.2f) mlabposition(11) mlabgap(*2)*/ byopts(row(1)) 
 	
+	* Now consider a quantile regression model where we let the coefficients vary across the quantiles of the z-scores
+
+	eststo qreg: reg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar $chealth $geog2 $year, $cluster
 	
-	
+	* Loop over groups to get results in a comparable table
+	local j = 1
+	forvalues i = 0.2(0.2)0.8 {
+		eststo qreg_`year'_`j': qui bsqreg stunting2 $matchar $hhchar2 $contra $hhag $demog female $chldchar $chealth $geog2 $year , quantile(`i') reps(100)
+		local j = `++j'
+	}
+	*end loop
+	esttab qreg_`year'*, beta 
 	
 	
 	

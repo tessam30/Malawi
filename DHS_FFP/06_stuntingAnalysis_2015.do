@@ -180,7 +180,6 @@ restore
 	global geog "altitude2 rural i.ffp_focus"
 	global geog1 "altitude2 ib(1).ffp_aois"
 	global geog2 "altitude2  ib(3).province"
-	global year "ib(2015).year"
 	global cluster "cluster(dhsclust)"
 	global cluster2 "cluster(hhgroup)"
 	
