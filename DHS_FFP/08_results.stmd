@@ -1,4 +1,4 @@
-# Office of Food for Peace Stunting analysis
+# Office of Food for Peace Stunting Analysis
 #### By: Tim Essam, USAID GeoCenter
 #### Date: July 2018
 
@@ -38,7 +38,7 @@ Quantile regression divides the z-scores into five categories and allows covaria
 ```
 
 ### Logistic Regression for Households Located in Food For Peace Focus Areas
-The tables below differ from the two above in that they capture the results of categorizing children into two categories: stunted or not stunted. A negative (positive) coefficient indicates that a child is less (more) likely to be stunted.
+The tables below differ from the two above in that they capture the results of categorizing children into two categories: stunted or not stunted. A negative (positive) coefficient indicates that a child is less (more) likely to be stunted.  
 __Caveat__: Many of the FFP priority regressions have small sample sizes. When reviewing the results, please keep in mind the limitations of small sample sizes when drawing conclusions.
 
 ```s/
