@@ -13,7 +13,7 @@ __Sex and Age of Child__: Female children (_female_) had higher z-scores than th
 
 __Child Health__: Children who have taken drugs for intestinal parasites (_intParas~s_) in the last six months had lower z-scores across the national level models. This effect could not be consistently detected within the FFP priority areas.
 
-__Geography & Time__: Children living in households located at higher elevations (_altitude2_) had lower z-scores. This likely a proxy for poor access (to markets, health clinics, public services) to goods and services that may be associated with better health outcomes. The year fixed-effect variable (_2010.year_) reflects the fact that stunting z-scores improved significantly from 2010 to 2015. It is worth noting this effect is not present in 3 of the 4 FFP priority areas -- __suggesting that gains were not as prevalent outside of the Lake Chilwa - Phalombe Plain__.
+__Geography & Time__: Children living in households located at higher elevations (_altitude2_) had lower z-scores. This likely a proxy for poor access (to markets, health clinics, public services) to goods and services that may be associated with better health outcomes. The year fixed-effect variable (_2010.year_) reflects the fact that stunting z-scores improved significantly from 2010 to 2015. It is worth noting this effect is only present in one of the FFP priority zones (__Lake Chilwa - Phalombe Plain__) in the final regression model looking at stunted/non-stunted children.
 
 ### Full Model Results
 We looked at the stunting z-scores (height for age) from the 2010 and 2015 Demographic and Household Survey (DHS) for Malawi. Regression models were used to estimate the relationship between identified contributing factors and stunting outcomes in Malawi. The unit of analysis is all children under 5 years of age.
@@ -31,7 +31,7 @@ We use ordinary least squares (OLS) to estimate the relationship between child z
 ```
 
 ### Quantile Regression Model on Pooled Data
-Quantile regression divides the z-scores into five categories and allows covariates to vary within the quantiles. In the results below, column one corresponds to a global model using all data, whereas the remaining columns report the estimated coefficients for each of the quantiles of z-scores. For example, column two summarizes the results among children in the lowest quintile of z-scores (lowest z-scores). Column 5 reports results for children in the highest quintile of z-scores.
+Quantile regression divides the z-scores into five categories and allows covariates to vary within the quantiles. In the results below, column one corresponds to a global model using all data, whereas the remaining columns report the estimated coefficients for each of the quantiles of z-scores. For example, column two summarizes the results among children in the lowest quantile of z-scores (lowest z-scores). Column 5 reports results for children in the highest quantile of z-scores.
 
 ```s/
      esttab qreg qreg_201015*, se star(** 0.05 *** 0.01) beta compress ar2 pr2
