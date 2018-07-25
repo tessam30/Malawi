@@ -1,0 +1,114 @@
+# DRAFT: Office of Food for Peace: Malawi Food Consumption Score Analysis
+#### By: Tim Essam & Brent McCusker, USAID GeoCenter
+#### Date: July 2018
+
+### Bottom Line Up Front
+__Female Headed Households & Ganyu Participation__: Female headed households had a positive correlation with FCS. However, the effect of being in a female headed households who participated in ganyu labor actually led to lower FCS scores, on average. While this seems counterintuitive, it may be the case that many female headed households are dependent on male counterparts who may live elsewhere. Ganyu labor is known to divert livelihood time out of a household's own subsistence and market agricultural activities, so it is also likely that women diverted time out of their own agriculture. In addition, most smaller scale, subsistence agriculture is predominantly female labor based. As far as the FFP priority areas, there is a negative correlation for households that are female headed and participate in ganyu labor -- likely capturing the effect of being a more vulnerable households. Labor intensive activities in program design should have the effect of stabilizing livelihoods dependent on ganyu labor, however, this needs to follow a phased approach. For instance, labor intensive activities should be prioritized early in programming to be gradually replaced by more subsistence and/or market based agriculture as evidence finds that marginality has decreased amongst beneficiary groups. It should be noted that while subsistence agriculture does not contribute directly toward raising incomes, it provides a significant basis to maintain or enhance food security. These elements - ganyu labor, subsistence production, and market production should be seen working in tandem, rather than at odds, to sustainably lift people out of poverty. Shortcutting straight to market-based, commodity chain activities often has the effect of lowering food security. Again, phasing based on evidence is critical.
+
+__Demographics and Literacy__: Larger dependency ratios and more male workers in a household are associated with lower FCS scores. On the other hand, households with literate household heads (English) and married household heads tend to have higher FCS scores. These effects appear in the Shire Valley specifications. This finding is consistent with the literature on livelihoods in Malawi. Men tend to work off-farm in low skill, low wage activities and fail to remit cash to rural relatives in sufficient amount to cover even basic subsistence. When such rural households have 4-6 dependents or more, the situation is amplified and the household becomes desperate, with women abandoning their own agricultural production and moving into ganyu labor (see point 1). Programming that emphasizes opportunities for on-farm male labor have a multiplier effect of stabilizing income for households in rural areas. Granted, not all labor can be absorbed on rural farms/households, but pushing male labor to peri-urban or urban activities will amplify this relationship.
+
+__Asset Ownership (Wealth Index)__: In general, the more assets a house has the higher its FCS. Ownership of an iron roof, a mobile phone, or numerous livestock assets (tropical livestock units), are strong signals for household wealth -- with the latter representing opportunities for diet diversification through animal products. Small holder (land holdings) households, appear to have a tougher time with FCS compared to similar households with larger swathes of productive land.
+_FFP may consider using the lack of ownership of iron roofs as a potential covariate in target efforts, given it's strong correlation with vulnerable and poor households_. Programming should consider not only income building strategies, but asset retention efforts during times of stress. Malawian coping mechanisms are extraordinarily thin, meaning they rely of very few and not very effective strategies. Seeking ganyu labor is a major strategy, as is asset sale. The latter has serious implications for poverty traps and has been discussed extensively in the literature in Malawi.
+
+__Geography & Time__: The effect of being isolated -- in terms of access to the nearest road -- is negatively correlated with FCS. As households are located out of the reach of road networks, their ability to consume a diverse diet appears to decline. In terms of time, FCS was lower across the board in 2016 relative to 2011. This effect is stable across all specifications. Lack of access to markets, for both food consumption and sale, plague remote rural Malawi. Neno and Mwanza suffer from this particular problem. Programming should examine the possibility of support for rural markets, but also include support for the transportation infrastructure upon which farmers rely to access those markets. This need not be in the form of roads works, however. The national bus company that provided transportation, albeit unreliable, for the poorest of Malawians has ceased operations. Previous analyses of food price shocks have shown that Malawi has a severely poorly functioning market. Other investments will surely suffer the negative consequences of this situation. Raising on-farm productivity, for instance, means little to household livelihoods if they are unable to fetch a good price for their produce.
+
+### Recent Literature underpinning these findings
+
+What most conceptualizations of vulnerability have in common is a focus on shocks, or disruptions of “normal” livelihood functions and relationships. A shock fundamentally alters the conditions of production under which a household generates a livelihood and the means through which it socially reproduces itself (often dichotomized as income and subsistence, respectively). Shocks have tended to be viewed as trigger events that expose the latent underlying vulnerability of people. Shocks do not, however, universally result in negative outcomes, nor as with vulnerability, is there a direct correlation to poverty. People experience shocks not as a direction relation to a single negative stimulus, such as a weather hazard or change in climate, but one mediated by a multitude of other intervening forces. One key challenge is trying to understand why people in the same environmental, economic, political, and social contexts can experience shocks in such disparate ways. In this light, food consumption and food price shocks should be seen as just one part of a larger context that household have to negotiate in order to survive and thrive. The intersection of other shocks and slow moving disruptions (think climate change) helps to explain some of the internal relationships we see between food consumption, food price shocks, and food security.
+
+An added dimension to consider is that *perceptions of shocks* are just as important to understand as those that have a material impact (Okonya et al 2013; Tesso, et al 2012; Mengistu, et al 2011; Mertz et al 2009). Households will often act on perceptions either to avoid anticipated shock effects or insulate themselves, for instance, against anticipated price increases. The causal pathway of change - the temporal, spatial and scalar dimensions - must be clearly identified in order to discern behaviors that insulate or expose households to shocks, determine the degree of vulnerability and prompt coping and/or adaptation strategies (Asfaw et al 2016).
+
+Specific literature that sheds light on our findings is outlined below. A fuller literature review is available upon request.
+
+Koppmair et al. (2016) Farm production, market access and dietary diversity in Malawi. Public Health Nutrition: 20(2), 325–335
+Authors discussed the association between farm production diversity and dietary diversity in rural smallholder households.
+Found that:
+1.	farm production diversity is positively associated with dietary diversity.  But the effect is relatively small.
+2.	Access to markets for buying food and for selling farm produce, as well as the adoption of modern agricultural technology, were shown to be more important for dietary diversity than diverse farm production
+Concludes that improving access to markets through better infrastructure and institutions and promoting the spread of productivity enhancing technologies seem to be more promising approaches to improve farm household diets.
+
+
+Kassie et al. (2015) Gendered food security in rural Malawi: why is women’s food security status lower? Food Sec. (2015) 7:1299–1320
+Paper examines the gendered food security gap and its causes in rural Malawi.
+Gendered food security gaps between FHHs and MHHs can be decomposed into two sets of components: those explained by observable differences in levels of resource use, and those due to unobserved differences affecting the returns to the resources used found that the food security of FHHs would improve significantly if they had the same levels of resource use as MHHs. However, even if FHHs had the same levels of resource use as MHHs, the gendered food security gap would not be closed because of the differences in the returns to those resources. Such differences in returns to resources explain 40 % (45 %) of the observed gendered chronic (transitory) food insecurity gap.
+Also suggests that the intensity with which sustainable agricultural practices have been adopted has a greater impact on the food security of FHHs than on MHHs.
+Variables used: Human capital - household head age, household head education, family size; Resource constraint -farm size, assets value, livestock, bicycle ownership, participation in off-farm activity, credit constraint, subsidy; Access to market, water and extension – distance to market, distance to extension offices, distance to water sources; Social capital and network- number of trustworthy traders, kinship network, group membership, government support; Shock – rainfall index, non-rainfall shock index; Natural capital – plot distance, participation in land market, good fertile soil, Adoption of agricultural technologies, household grow cash crops, location.
+
+Beegle et al (2017) Direct and indirect eﬀects of Malawi's public works program on food security. Journal of Development Economics 128 (2017) 1–23.
+Evaluates the Malawi Social Action Fund (public works program) program, its eﬀects on food security and use of fertilizer.
+Found that while Malawi's PWP oﬀers households the opportunity to earn approximately $22 at planting season and an additional $22 later in the year, it does not have a measurable short-term eﬀect on lean season food security. Even improving the structure of the program by rescheduling the second work cycle from the harvest season to the lean season does not generate measurable improvements in the food security of treated households.
+
+Harrigan (2008) Food insecurity, poverty and the Malawian Starter Pack: Fresh start or false start? Food Policy 33 (2008) 237–249
+Until the 1990s less emphasis was placed on the household dimensions of food security. Household food insecurity is an important dimension of chronic poverty.
+Chronic and transitory food insecurity in Malawi are closely linked with Chronic poverty. The chronically poor are often the most vulnerable to food insecurity – particularly exposed to food insecurity hazards as well as having limited coping mechanisms to deal with such hazards. Food insecurity in turn can further deepen poverty, not just in terms of negative nutritional eﬀects on health and livelihoods but through the use of coping mechanisms such as asset sales which make it harder for families to lift themselves out of the poverty trap.
+The close links between poverty and food insecurity in Malawi can be explained by a variety of factors. Around 85% of the population - small holders producing ﬁrst and foremost maize for consumption. Average farm-holding less than 0.8 ha - inadequate to produce enough food to feed the average family throughout the year.  Reliance on rain-fed agriculture with an increasingly variable single season rainfall, plus extensive soil degradation - maize productivity has been declining as has maize production per capita. This has translated into declining calorie intake per capita.  Although maize production has trended upwards over the last two decades, population growth of 2% per annum has led to a decline in per capita maize availability. Low productivity is compounded by the high cost of imported fertilizer- unaﬀordable to many farmers. The poorly developed marketing systems and limited export potential make rural livelihood diversiﬁcation diﬃcult for most of the rural poor. Hence, they are caught in a maize poverty trap, unable to move beyond subsistence maize production and constantly facing the threat of food shortages.
+Malawian population has become more vulnerable to food insecurity. Over the past decade and a half both the frequency of food security hazards in Malawi – local climatic events, HIV/AIDs, policy mistakes, price shocks – has increased whilst the ability of the population to cope with such hazards – as determined by their assets, social capital, degree of livelihood diversiﬁcation – has declined.
+Functioning markets are critical to enhanced food security Malawi, have been unsuccessful in simultaneously promoting food security objectives and market development. Whatever approach to household food security is taken it needs to be complimented by some form of social safety net system for asset poor households unable, at least in the short term, to access market opportunities making them vulnerable to chronic food insecurity
+The coping strategies used by the most vulnerable households to deal with growing food insecurity, such as ganyu labour and asset depletion further intensiﬁed the vicious poverty-food insecurity cycle.
+Starter Pack was a successful production intervention that helped achieve both national and household food self-suﬃciency in Malawi
+
+### Full Model Results
+We looked at food consumption scores (FCS) from the 2011 and 2016 Integrated Household Survey for Malawi. Regression models were used to estimate the relationship between FFP identified contributing factors and FCS values. The unit of analysis is the FCS for a household.
+
+__Interpreting the Tables__: All coefficients reported below are standardized to allow for direct comparison across covariates. The larger the coefficient, the greater the marginal effect of that covariate on the FCS. Standard errors are clustered at the enumeration area level for all specifications in the global model. Robust standard errors are used for the FFP priority models. Three stars indicate significance at the 99 percentile and two stars 95th percentile. The sample size for all regression is indicated by the __N__ at the bottom of the table. All results should be interpreted as conditional correlations versus causal effects.
+
+__Indicator Covariates__: Covariates that enter the regression model as a categorical or indicator variable start with a number. For example: _0.femhead_ --> corresponds to _non-female headed househlds_, _1.femhead_ --> corresponds to _female headed households_, and so on.
+If coefficient values are ```0.000``` and standard errors are ```(.)``` for an covariate, this indicates a base category. All comparisons within the indicator/categorical covariate should be made relative to this category.
+
+### Global Model on Pooled Data (2010 & 2015 DHS)
+We use ordinary least squares (OLS) to estimate the relationship between food consumption scores and plausible contributing factors. Data from the 2011 and 2016 Integrated Household Survey have been pooled to estimate a model across all of Malawi. Contributing factors that are stable and consistent across all models should be given more weight than factors significant in a single specification.
+
+```s/
+      esttab FCS*, se star(** 0.05 *** 0.01)  beta ar2 drop(*district *region) mtitles("base" "base 2" "base 3" "region fe" "district fe")
+```
+
+###  Subnational Model for Households Located in Food For Peace Focus Areas
+The table below differs from the one above in that it presents results only for FFP focus areas. The first column summarizes a model fit to all FFP focus areas, and the remaining columns summarize results for each specific livelihood zone. Because the models are focusing on subpopulations, some factors appear to have varying levels of influence.
+
+__Caveat__: Many of the FFP priority regressions have small sample sizes. When reviewing the results, please keep in mind the limitations of small sample sizes.
+
+```s/
+       esttab lvd*, beta ar2  mtitles("FFP Focus" "Phalombe" "Shire Valley" "Phirilongwe" "Shire Hland")
+```
+
+### Tabulations of Select Coefficients
+The tables below show cross tabulations of the covariates by year.
+
+```s
+    table livelihood_zone year, c(mean FCS n FCS) f(%9.2f)
+    table district year, c(mean FCS n FCS) f(%9.2f)
+
+```
+
+### Full Covariate Details
+The tables below provide summary statistics for FCS and descriptions of the contributing factors.
+
+```s/
+    mean FCS, over(livelihood_zone year )
+
+    d FCS agehead femhead ganyuFemhead marriedHoh vulnHead litHeadChich litHeadEng educAdult educAdultsq gendMix depRatio under15 mlabor flabor hhmignet ironRoof mobile ownLivestock landQtile tluTotal ag_index durables_index infra_index wealth_index dist_admarc  dist_popcenter dist_road fsrad3_agpct livelihood_zone rural year
+
+```
+
+
+
+#### References Cited
+
+Asfaw, S., et al. 2016. What determines farmers’ adaptive capacity? Empirical evidence from Malawi. Food Security 8(3): 643-664.
+
+Beegle, K., et al. 2017. Direct and indirect effects of Malawi's public works program on food security. Journal of Development Economics 128: 1-23.
+
+Harrigan, J. 2008. Food insecurity, poverty and the Malawian Starter Pack: Fresh start or false start?. Food Policy 33:237-249.
+
+Kassie, M., et al. 2015. Gendered food security in rural Malawi: why is women’s food security status lower? Food Security 7(6): 1299-1320.
+
+Koppmair, S., et al. 2017. Farm production, market access and dietary diversity in Malawi. Public Health Nutrition 20(2): 325-335.
+
+Mengistu, D. 2011. Farmers’ perception and knowledge of climate change and their coping strategies to the related hazards: Case study from Adiha,
+central Tigray, Ethiopia. Agricultural Sciences, 2(2): 138-145.
+
+Mertz, O., Mbow, C., Reenberg, A, and Diouf, A. 2009. Farmers’ Perceptions of Climate Change and Agricultural Adaptation Strategies in Rural Sahel. Environmental Management, 43: 804-816.
+
+Okonya, J.,  Syndikus, K. & Kroschel, J. 2013. Farmers' Perception of and Coping Strategies to Change: Evidence from Six Agro-Ecological Zones of Uganda. Jounral of Agricultural Science, 5(8): 252-263.
+
+Tesso, G., Emana, B and Ketema, M. 2012. Econometric analysis of local level perception, adaptation and coping strategies to climate change induced shocks in North Shewa, Ethiopia. International Research Journal of Agricultural Science and Soil Science (ISSN: 2251-0044) Vol. 2(8) pp. 347-363.
