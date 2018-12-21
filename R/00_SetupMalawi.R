@@ -16,16 +16,29 @@ excelpath <- "Excel"
 graphpath <- "Graph"
 rpath <- "R"
 
-source(file.path(rpath , "strip_geom.R"))
+
+#Source helper functions
+file_list <- list("strip_geom.R", 
+                  "helper_functions.R",
+                  "MWI_geo_cw.R")
+
+# Source custom scripts and data needed for project
+file_list %>% 
+  map(~source(file.path(rpath, .)))
+rm(file_list)
+
+
 
 # Set up base GIS file and establish ISO-numeric crosswalk codes for districts
 
 mwi_geo <- read_sf(file.path(gispath, "gadm36_MWI_shp", "gadm36_MWI_1.shp")) %>% 
   mutate(CID = gsub("MWI.", "", GID_1), 
-         CID = gsub("_1", "", CID))
+         CID = gsub("_1", "", CID), 
+         CID = as.numeric(CID))
 
 mwi_geo %>% 
   ggplot() +
   geom_sf(aes(fill = REGCODE))
 
-mwi_geo_df <- strip_geom(mwi_geo, everything())
+mwi_geo_df <- strip_geom(mwi_geo, everything()) %>% 
+  left_join(., mwi_cw, by = c("CID" = "CID"))
