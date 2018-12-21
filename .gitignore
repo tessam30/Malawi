@@ -1,11 +1,9 @@
-# Windows image file caches
 .Rproj.user
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
 
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
 
 Data
 Excel
