@@ -31,7 +31,8 @@ lapa_raw <- data_frame(sheetname = excel_sheets(read_path)) %>%
   mutate(score_line = ifelse(str_detect(X__13, "Consensus Score"), 1, 0),
          performance_area = ifelse(str_detect(lapa_categ, "Key Performance Area "), 1, 0),
          remove_flag = ifelse(str_detect(lapa_categ, "Description:"), 1, 0),
-         lapa_fill = ifelse(performance_area == 1, lapa_categ, NA_character_)) %>% 
+         lapa_fill = ifelse(performance_area == 1, lapa_categ, NA_character_), 
+         district = trimws(district)) %>% 
   fill(lapa_fill) %>% 
   # because X__13 is missing for a few rows, the score_line flag is missing as well
   filter(score_line != 1 | is.na(score_line)) %>% 
@@ -52,8 +53,8 @@ lapa_full <-
          lapa_score,
          everything())
 
-lapa_full %>% group_by(district) %>% summarise(tmp = sum(lapa_score))
-str(lapa_full)
+lapa_full %>% select(district, lapa_score) %>% summarise(tmp = sum(lapa_score))
+
 
 %>% 
   group_by(district) %>% 
