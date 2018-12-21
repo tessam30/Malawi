@@ -8,8 +8,8 @@
 pacman::p_load("tidyverse", "lubridate", "sf", "extrafont", "readxl", "measurements", "pdftools", "purrr", "styler", "scales", "llamar", "haven", "sjlabelled", "vtable", "sjmisc", "survey", "data.table")
 
 
-
 datapath <- "Data"
+dataout <- "Data/Dataout"
 dhspath <- "DHS"
 gispath <- "Data/GIS"
 excelpath <- "Excel"

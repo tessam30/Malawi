@@ -22,9 +22,14 @@ read_path <- file.path(datapath, "LAPA District councils Results.xlsx")
 # 5. drop the TOTALS table as it's wrong, then clean up names and recalculate scores
 
 lapa_raw <- data_frame(sheetname = excel_sheets(read_path)) %>% 
-  mutate(file_contents = map(sheetname, ~read_excel(path = read_path))) %>% 
+  mutate(file_contents = map(sheetname, ~read_excel(path = read_path, sheet = .x))) %>% 
   filter(sheetname != "TOTALS FOR ALL COUNCILS") %>% 
-  unnest() %>% 
+  unnest()
+
+  
+  lapa_raw %>% filter(sheetname = ) 
+
+%>% 
   rename(district = sheetname,
          lapa_categ = `Nkatabay Local Authority Performance Assessment Scores`) %>% 
   select(district, lapa_categ, X__13, X__14) %>% 
@@ -32,8 +37,12 @@ lapa_raw <- data_frame(sheetname = excel_sheets(read_path)) %>%
          performance_area = ifelse(str_detect(lapa_categ, "Key Performance Area "), 1, 0),
          remove_flag = ifelse(str_detect(lapa_categ, "Description:"), 1, 0),
          lapa_fill = ifelse(performance_area == 1, lapa_categ, NA_character_), 
-         district = trimws(district)) %>% 
-  fill(lapa_fill) %>% 
+         district = trimws(district)) 
+
+%>% 
+  fill(lapa_fill)
+
+%>% 
   # because X__13 is missing for a few rows, the score_line flag is missing as well
   filter(score_line != 1 | is.na(score_line)) %>% 
   filter(remove_flag !=1 | is.na(remove_flag))
@@ -53,7 +62,9 @@ lapa_full <-
          lapa_score,
          everything())
 
-lapa_full %>% select(district, lapa_score) %>% summarise(tmp = sum(lapa_score))
+write_csv(lapa_full, file.path(dataout, "tmp.csv"))
+
+lapa_full %>% group_by(district) %>% summarise(tmp = sum(lapa_score))
 
 
 %>% 
