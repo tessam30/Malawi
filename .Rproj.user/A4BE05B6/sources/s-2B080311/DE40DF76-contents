@@ -1,0 +1,120 @@
+# Forumals w/ lazy eval
+
+# Formulas ----------------------------------------------------------------
+
+
+# Main thing to note is how a formula is treated  y R -- 
+# class: formula
+f <- ~ x + y + z
+typeof(f)
+attributes(f)
+
+# The structure is also treated differently depending on 1 or 2 sided formula
+length(f)
+f[[2]]
+f[[1]]
+
+# Notice how the position correspond to different parts of the formula
+g <- y ~ x + z
+length(g)
+g[[1]]
+g[[2]]
+g[[3]]
+
+# Lazy eval has f_rhs() and f_lhs() to access either side of forumla
+
+# to evaluate, use the f_eval() function
+x <- 1
+add_1000 <- function(x) {
+  ~ 1000 + x
+}
+add_1000(3)
+
+# need to use the f_eval to evaluation the function
+f_eval(add_1000(3))
+
+# use the f_unwrap() to see what is going on inside the formula
+f_unwrap(add_1000(3))
+
+
+
+# Non-standard scoping ----------------------------------------------------
+# f_eval() has an optional second argument: a named list that overrides values
+# found in the formula's environment
+
+y <- 100
+f_eval(~y)
+f_eval(~y, data = list(y = 10))
+
+# So you can mix variables in this environment and add data arguments
+f_eval(~ x + y, data = list(x - 10))
+
+# can even use functions
+f_eval(~f(y), data = list(f = function(x) x * 3))
+
+# This leads to non-stanard scoping
+f_eval(~ mean(cyl), data = mtcars)
+
+# Where does x come from below?
+f_eval(~ x, data = mydata)
+
+# Cannot tell, so f_eval() has two pronouns: .data and .env
+# Can use these pronounds to rewrite the previous formula to remove ambiguity
+mydata <- data.frame(x = 100, y = 1)
+x <- 10
+
+f_eval(~ .env$x, data = mydata)
+f_eval(~ .data$x, data = mydata)
+
+# If the variable or object doesn't exist, you get an error
+f_eval(~ .env$z, data = mydata)
+f_eval(~ .data$z, data = mydata)
+
+# NOTE: variable attaches to a dataframe, object is in the environment
+
+# Unquoting: allows you to write functions that the user supplies part of the fomula
+
+df_mean <- function(df, variable) {
+  f_eval(~ mean(uq(variable)), data = df)
+}
+
+df_mean(mtcars, ~ cyl)
+df_mean(mtcars, ~ disp * 0.01638)
+df_mean(mtcars, ~ sqrt(mpg))
+
+
+# How does this work? Use the f_interp() to show
+variable <- ~ cyl
+f_interp(~ mean(uq(variable)))
+
+# Unquoting allows you to create a code of templates
+f <- ~ mean
+variable <- ~ disp * 0.01638
+f_interp(~ uq(f)(uq(variable)))
+
+# NOTES: uq() on takes the RHS of a formula; use uqf() to use the whole formula
+formula <- y ~ x
+f_interp(~lm(uq(formula), data = df))
+
+         
+# IF you need extra arguments, use the uqs() -- unquote-splice
+variable <- ~ x
+extra_args <- list(na.rm = TRUE, trim = 0.9)
+f_interp(~ mean(uq(variable), uqs(extra_args)))
+
+
+# Non-standard scoping ----------------------------------------------------
+
+sieve <- function(df, condition) {
+  rows <- f_eval(condition, df)
+  
+  if(!is.logical(rows)) {
+    stop("`condition' must be logical.", call. = FALSE)
+  }
+  
+  rows[is.na(rows)] <- FALSE
+  df[rows, , drop = FALSE]
+}
+sieve()
+df <- data.frame(x = 1:5, y = 5:1)
+sieve(df, ~ x + y)
