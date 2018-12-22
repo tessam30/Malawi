@@ -2,15 +2,12 @@
 # Author: Tim Essam, PhD / GeoCenter
 # Date: 2018_12_20
 
-
-
 # Load data  --------------------------------------------------------------
 
-
-
-# Captain's log 2018_12_21: Data appear to be wrong in the final spreadsheet.
+# Captain's log, datadate: 2018_12_21: Data appear to be wrong in the final spreadsheet.
+# Data that were "vetted" appear to be incorrect and deeply flawed.
 # Aborting attempt to work w/ final table and will begin reconstruction process
-# from the district data.
+# from the district data. 
 
 read_path <- file.path(datapath, "LAPA District councils Results.xlsx")
 
@@ -24,77 +21,114 @@ read_path <- file.path(datapath, "LAPA District councils Results.xlsx")
 lapa_raw <- data_frame(sheetname = excel_sheets(read_path)) %>% 
   mutate(file_contents = map(sheetname, ~read_excel(path = read_path, sheet = .x))) %>% 
   filter(sheetname != "TOTALS FOR ALL COUNCILS") %>% 
-  unnest()
-
+  unnest() %>% 
   
-  lapa_raw %>% filter(sheetname = ) 
+  # Drop empty cells because they provide no value
+  select(-(X__1:X__12), -(X__14:X__18)) %>%
+  rename(lapa_description = `DISTRICT COUNCIL PERFORMANCE ASSESSMENT AND MONITORING TOOL`,
+         district = sheetname,
+         score = `Consensus Score (CS)`) %>% 
+  mutate(row_type = case_when(
+    str_detect(lapa_description, "Description:") ~ "description",
+    str_detect(lapa_description, "Key Performance Area") ~ "key_perform",
+    str_detect(lapa_description, "Performance Standard") ~ "perf_standard",
+    TRUE ~ lapa_description
+  )) %>% 
+  filter(row_type != "description") %>% 
+  mutate(district = trimws(district)) %>% 
+  
+  # merge in district crosswalk info
+  left_join(., mwi_cw, by = c("district" = "lapa_district")) %>% 
+  
+  # Need a filter so we are not double counting scores for districts where two columns
+  # have values (Dedza)
+  mutate(score_flag = ifelse(score == X__13 & !is.na(score) & score != 0, 1, 0),
+         lapa_score = case_when(
+           (score != X__13 & score_flag != 1) ~ rowSums(select(., score:X__13)),
+           (is.na(score)) ~ X__13,
+           TRUE ~ score),
+         lapa_score = replace_na(lapa_score, 0),
+         lapa_area = ifelse(row_type == "key_perform", lapa_description, NA_character_ )) 
+# Some bug will not let me pipe after the case_when call, but code above works fine w/out %>%
 
-%>% 
-  rename(district = sheetname,
-         lapa_categ = `Nkatabay Local Authority Performance Assessment Scores`) %>% 
-  select(district, lapa_categ, X__13, X__14) %>% 
-  mutate(score_line = ifelse(str_detect(X__13, "Consensus Score"), 1, 0),
-         performance_area = ifelse(str_detect(lapa_categ, "Key Performance Area "), 1, 0),
-         remove_flag = ifelse(str_detect(lapa_categ, "Description:"), 1, 0),
-         lapa_fill = ifelse(performance_area == 1, lapa_categ, NA_character_), 
-         district = trimws(district)) 
+lapa_raw_df <- 
+  lapa_raw %>% 
+  fill(lapa_area) %>% 
+  select(CID, district, lapa_description, lapa_area, lapa_score, everything())
 
-%>% 
-  fill(lapa_fill)
-
-%>% 
-  # because X__13 is missing for a few rows, the score_line flag is missing as well
-  filter(score_line != 1 | is.na(score_line)) %>% 
-  filter(remove_flag !=1 | is.na(remove_flag))
-
-lapa_raw %>% 
-  mutate(df_names = ifelse(performance_area == 1, "key_perform", "key_perform_subcateg")) %>% 
-  split(., .$df_names) %>% 
-  list2env(., envir = .GlobalEnv)
-
-lapa_full <- 
-  key_perform_subcateg %>% 
-  mutate(X__13 = as.numeric(X__13)) %>% 
-  mutate(lapa_score = rowSums(select(., contains("__1")), na.rm = TRUE)) %>% 
-  select(district, 
-         lapa_categ,
-         key_perform = lapa_fill, 
-         lapa_score,
-         everything())
-
-write_csv(lapa_full, file.path(dataout, "tmp.csv"))
-
-lapa_full %>% group_by(district) %>% summarise(tmp = sum(lapa_score))
-
-
-%>% 
+  # Start flagging strings to separate out categories
+lapa_key_perform <- 
+  lapa_raw_df %>% 
+  filter(row_type == "key_perform") 
+  
+lapa_full_dist <- 
+  lapa_raw_df %>% 
+  filter(row_type == "perf_standard") %>% 
+  group_by(lapa_area, district) %>% 
+  mutate(lapa_area_score = sum(lapa_score, na.rm = TRUE)) %>% 
+  ungroup() %>% 
   group_by(district) %>% 
-  mutate(lapa_score_total = sum(lapa_score, na.rm = TRUE))
-        
-lapa_full %>% 
-  group_by(district) %>% 
-  summarise_at(vars(lapa_score), sum, na.rm = TRUE) %>% 
-  print(n = Inf)
+  mutate(lapa_total_score = sum(lapa_score, na.rm = TRUE)) %>% 
+  ungroup()
+
+# plot the results in a map
+lapa_full_dist %>% 
+  group_by(district, CID) %>% 
+  summarise(lapa = mean(lapa_total_score)) %>% 
+  left_join(., mwi_geo, by = c("CID")) %>% 
+  ggplot() +
+  geom_sf(aes(fill = lapa), colour = "white", size = 0.5) +
+  scale_fill_viridis_c(direction = -1, option = "A")
+
+lapa_full_dist %>% 
+  group_by(district, CID) %>% 
+  summarise(lapa = mean(lapa_total_score)) %>% 
+  ungroup() %>% 
+  mutate(dist_sort = fct_reorder(district, lapa)) %>% 
+  ggplot(aes(x = dist_sort, y = lapa, fill = lapa)) +
+  geom_col() + coord_flip() +
+  scale_fill_viridis_c(direction = -1, option = "A")
+
+# Plot the Key performance results
+lapa_full_dist %>%
+  mutate(lapa_area_short = str_remove_all(lapa_area, "Key Performance Area")) %>% 
+  group_by(district, lapa_area, lapa_area_short, CID) %>% 
+  summarise(lapa_score = sum(lapa_score, na.rm = TRUE)) %>% 
+  mutate(dist_sort = fct_reorder(district, lapa_score)) %>% 
+  ggplot(aes(x = dist_sort, y = lapa_score, fill = lapa_score)) +
+  geom_col() + coord_flip() +
+  facet_wrap(~ lapa_area_short) +
+  scale_fill_viridis_c(direction = -1, option = "A")
+  
+  
+  left_join(., mwi_geo, by = c("CID")) %>% 
+  ggplot() +
+  geom_sf(aes(fill = lapa_score), colour = "white", size = 0.5) +
+  scale_fill_viridis_c(direction = -1, option = "A") +
+  facet_wrap(~lapa_area_short, nrow = 2)
+  
+  
+  # Toggle below for bar graph
+  mutate(dist_sort = fct_reorder(district, lapa_score)) %>% 
+  ggplot(aes(x = dist_sort, y = lapa_score, fill = lapa_score)) +
+    geom_col() + coord_flip() +
+  facet_wrap(~ lapa_area_short) +
+  scale_fill_viridis_c(direction = -1, option = "A")
 
 
-str(lapa_raw)
-
-
-
-
-
-
-r
-
-# Need to only read columms A, N and O
-# Write everything into a list
-lapa_raw <- excel_sheets(read_path) %>%
-  set_names() %>%
-  map(read_excel, path = read_path)
-
-# Remove last element of the list b/c the data are wrong
-lapa_raw$`TOTALS FOR ALL COUNCILS` <- NULL
-lapa_raw %>% reduce(rbind)
+# Write to a shapefile for Brent in case shut down goes on and on
+lapa_sf <- lapa_full_dist %>%
+    mutate(lapa_area_short = str_remove_all(lapa_area, "Key Performance Area")) %>% 
+    group_by(district, lapa_area, lapa_area_short, CID) %>% 
+    summarise(lapa_score_categ = sum(lapa_score, na.rm = TRUE)) %>% 
+    group_by(district) %>% 
+  mutate(lapa_score_total = sum(lapa_score_categ)) %>% 
+  left_join(., mwi_geo, by = c("CID")) 
+  
+st_write(lapa_sf, file.path(gispath, "MWI_lapascores_full.shp"))
+  
+lapa_full_dist %>% 
+  write_csv(., file.path(dataout, "MWI_LAPA_full_district.csv"))
 
 
 
