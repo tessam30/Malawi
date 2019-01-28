@@ -129,7 +129,7 @@ st_write(lapa_sf, file.path(gispath, "MWI_lapascores_full.shp"))
   
 lapa_full_dist %>% 
   write_csv(., file.path(dataout, "MWI_LAPA_full_district.csv"))
-
+ 
 
 
 
