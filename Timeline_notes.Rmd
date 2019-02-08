@@ -1,0 +1,60 @@
+---
+title: "Making Timelines"
+author: "Tim Essam"
+date: "2/8/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+load(file = "df_bar.RData")
+load(file = "df_line.Rdata")
+```
+
+##  Things I learned Making a Timeline for Malawi
+
+_Background_ : The Malawi Mission asked us to put together a graphic showing historical events as well as economic indicators from the past 60 years. This document captures what we learned while creating this produce.
+
+### Event Data
+Brent started with a list of economic, political and climatic events that the Mission had identified. He then mocked up a timeline on the events, organized by different sectors. We ended up creating two datasets, one that captured the more qualitative events and one that captured indicator values across a similar time span.
+
+A snipped of each dataset is included below. Most of the columns are pretty self expanatory except, perhaps, the ymin and ymax column. These two columns are used to controld the height of the bar used in the timeline. -2 and 2 are just arbitrary numbers for now, but adding this field in the data allowed for overlapping events within sector.  By varying the ymin and ymax, we could control how overlapping events were plotted. __If you know you will have many overlapping events you may want to develop a standard methodlogy for addressing__.  
+
+
+```{r Data setup, echo = FALSE}
+glimpse(df_bar)
+```
+
+### Indicator Data
+For the various economic and climatic indicators we determined that a 2nd tab in a spreadsheet would be the cleanest way to log the data. Also, because these data were continuously available on an annual basis, we determined that we could always merge the event data in based on the starting date and sector mapping. Regarding the sector mapping, indicators were broadly associated with events and tagged to a specific sector. While not necessary, this allows for plotting both time-series indicators with event data on a single graph -- once the data have been appropriately melded together. 
+
+_Reshaping indicators_: As shown below, the indicator data are spread wide with a common date field. To "stack" this data, we use the tidyverse::gather() function which allows for easy reshaping. 
+
+```{r pressure, echo=FALSE}
+head(df_line)
+```
+
+```{r reshaping, echo = FALSE}
+# the pipeline for reshaping the data
+df_line %>% 
+  
+
+  mutate(pop = pop/1e6) %>%   # Deflate the population variable to be in millions -- makes easier to read
+  gather(key = "indicator",   # define the name of the column with the reshaped labels
+         value = "value",     # define the name of the column that will contain the indicator values
+         -date) %>%           # apply the operation to all columns except the date one
+    mutate(country = "Malawi",
+         Sector = case_when(  # Creating Sector mappings that will allow for joining with certain events
+           indicator == "ag_pct_GDP" ~ "AG POLICY", 
+           indicator == "econ_growth" ~ "PRESIDENT",
+           indicator == "pop_growth_rate" ~ "POLITICS",
+           TRUE ~ NA_character_
+         ))
+
+```
+  
+  
+
+  
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

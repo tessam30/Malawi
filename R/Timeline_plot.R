@@ -1,13 +1,19 @@
 # Load timeline data, reshape and create sample plots
 
 library(tidyverse)
+library(rlang)
 library(purrr)
 library(readxl)
 library(gridExtra)
 library(RColorBrewer)
 library(scales)
+library(ggrepel)
+library(lubridate)
+library(llamar)
+library(extrafont)
 
 excel_path <- c("Excel")
+graph_path <- c("Graph")
 excel_sheets(file.path(excel_path, "Malawi TImelines.xlsx"))
 
 df_bar <- read_excel(file.path(excel_path, "Malawi TImelines.xlsx"), sheet = "Bar Data")
@@ -15,35 +21,157 @@ df_line <- read_excel(file.path(excel_path, "Malawi TImelines.xlsx"), sheet = "L
 
 map(list(df_bar, df_line), str)
 
+# Turn off scientific notation for now
+options(scipen = 999)
+
+
+# Basic function to do grouped summaries
+group_count <- function(df, ...) {
+  grouping <- enquos(...)
+  
+  df %>% group_by(!!!grouping) %>% 
+    count() %>% 
+    print(n = Inf)
+  }
+
+
+# Mutate and plot ---------------------------------------------------------
 df_line_long <- 
   df_line %>% 
+  mutate(pop = pop/1e6) %>% 
   gather(key = "indicator", value = "value", econ_growth:ag_pct_GDP) %>% 
-  mutate(country = "Malawi")
-
-lims <- as.POSIXct(strptime(c("1964-01-01","2017-01-01"), format = "%Y-%m-%d"))   
-
-# Set break vector
-
-end <- max(df_line_long$date) %>% as.Date()
-beg <- min(df_line_long$date) %>% as.Date()
-
-line <- df_line_long %>% 
-  ggplot(aes(x = date, y = value)) + 
-  geom_line() +
-  facet_wrap(~indicator, scale = "free",
-             nrow =4 ) +
-  theme_minimal() 
+  mutate(country = "Malawi",
+         Sector = case_when(
+           indicator == "ag_pct_GDP" ~ "AG POLICY",
+           indicator == "econ_growth" ~ "PRESIDENT",
+           indicator == "pop_growth_rate" ~ "POLITICS",
+           TRUE ~ NA_character_
+         ))
 
 
+# Set break vector and limits so plots can be aligned
+dat_seq <- seq(as.POSIXct("1960-01-01"),
+               as.POSIXct("2020-01-01"), "10 years")
+lims <- as.POSIXct(strptime(c("1960-01-01", "2020-01-01"), 
+                            format = "%Y-%m-%d"))
 
-bar <- ggplot(df_bar) + 
-  geom_rect(aes(xmin = Start, xmax = End, ymin = -2, ymax = 2, fill = Event)) + 
+# Check w/ a Gantt chart any potential overlap in events
+bar_long <- df_bar %>%
+  select(Start, End, everything()) %>% 
+  mutate(Start = ymd(Start),
+         End = ymd(End)) %>%
+  gather(date_node, event_date, -c(Sector:ymax)) %>%
+  arrange(date_node, event_date) %>%
+  mutate(Event = fct_reorder(Event, event_date))
+
+#Where to put dotted lines
+bar_long %>% 
+ggplot(aes(x = Event, y = event_date, colour=Sector)) + 
+  geom_line(size=6) + 
+  guides(colour=guide_legend(title=NULL)) +
+  labs(x=NULL, y=NULL) + 
+  coord_flip() +
+  scale_y_date(date_breaks="10 years", labels=date_format("%b ‘%y")) +
+  facet_wrap(~Sector, scales = "free")
+
+
+# General function to make line plots of individual indicators in case they are needed
+line_plot <- function(df, ...) {
+  F <- quos(...)
+  df %>% filter(!!!F) %>% 
+    mutate(ylim = min(value)) %>% 
+    ggplot(aes(x = date, y = value)) +
+    geom_line(colour = grey50K) +
+    scale_x_datetime(limits = lims,
+                     labels = date_format("%Y")) +
+    theme_minimal()
+}
+# Create plots of each indicator
+df_line_long %>% split(.$indicator) %>% 
+  map(., ~line_plot(.))
+
+
+line_p <- df_line_long %>% 
+  ggplot(aes(x = date, y = value)) +
+  geom_line(colour = grey50K) +
+  scale_x_datetime(
+    breaks = seq(as.POSIXct("1960-01-01"),
+                 as.POSIXct("2020-01-01"), "10 years"),
+    limits = lims,
+    labels = date_format("%Y")) +
+  facet_wrap(~indicator, nrow = 4, scales = "free") +
+  theme_minimal()
+
+
+bar_p <- df_bar %>% 
+  ggplot(.) + 
+  geom_rect(aes(xmin = Start, 
+                xmax = End, 
+                ymin = ymin, 
+                ymax = ymax, 
+                fill = Sector), 
+            colour = "white") + 
   facet_wrap(~Sector, nrow = 6) +
+  geom_text_repel(aes(x=Start + (End-Start)/2, 
+                      y = ymin +(ymax-ymin)/2, 
+                      label=Event_abbr), 
+                  size=3,
+                  point.padding = NA,
+                  family = "Lato Light") +
+  theme_timeline() +
+    scale_fill_viridis_d(alpha = 0.45) +
+  scale_x_datetime(
+    breaks = seq(as.POSIXct("1960-01-01"),
+                 as.POSIXct("2020-01-01"), "10 years"),
+    labels = date_format("%Y"),
+    expand = c(0.05, 0.05),
+    limits = lims)
+  
+  
+  
+                   
+# First iteration
+mwi_tl <- ggarrange(bar_p, line_p, nrow = 2,
+        align = "v") %>% annotate_figure(.,
+                                         top = text_grob("Malawi: Historical Events Summarized")) 
+
+  ggsave(plot = mwi_tl, file.path(graph_path, "MWI_timeline.pdf"),
+                      dpi=300, width = 12, height = 18, units = "in",
+                      device = "pdf")
+
+# Makes more sense to align some of the events with the indicator data. First
+# let's align the economic events to the economic growth data
+
+group_count(df_line_long, indicator)
+
+tst <- df_line_long %>% 
+  left_join(., df_bar, by = c("date" = "Start", "Sector" = "Sector")) %>% 
+  # Fill in missing values so we can group by sector and replace min and max to match graph bounds
+  fill(ymin, ymax) %>% 
+  group_by(indicator) %>% 
+  mutate(ind_min = min(value), 
+         ind_max = max(value)) %>% 
+  ungroup()
+
+# Try overlaying the bar plot on the indicator plot
+tst %>% 
+  filter(indicator == "econ_growth") %>% 
+  mutate(ymin = min(indicator), 
+         ymax = max(indicator)) %>% 
+  ggplot(.) + 
+  geom_rect(aes(xmin = date, 
+                xmax = End, 
+                ymin = ind_min, 
+                ymax = ind_max, 
+                fill = Event), 
+            colour = "white") +
+  geom_line(aes(x = date, y = value))+
   theme_minimal() +
-  scale_y_continuous(limits = c(-4, 4))
-
+  scale_fill_viridis_d(alpha = 0.25) +
+  scale_x_datetime(
+    breaks = seq(as.POSIXct("1960-01-01"),
+                 as.POSIXct("2020-01-01"), "10 years"),
+    labels = date_format("%Y"),
+    expand = c(0.05, 0.05),
+    limits = lims)
   
-  
-  
-
-grid.arrange(bar, line)
