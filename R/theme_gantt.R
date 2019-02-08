@@ -12,8 +12,23 @@ theme_gantt <- function(base_size=11, base_family="Source Sans Pro Light") {
           axis.title=element_text(size=rel(0.8), family="Source Sans Pro Semibold"),
           strip.text=element_text(size=rel(1), family="Source Sans Pro Semibold"),
           strip.background=element_rect(fill="#ffffff", colour=NA),
-          panel.spacing.y=unit(1.5, "lines"),
+          panel.spacing.y=unit(10, "lines"),
           legend.key = element_blank())
   
+  ret
+}
+
+theme_timeline <- function(base_size = 10, base_family = "Lato Light") {
+  ret <- theme_minimal(base_size, base_family) %+replace%
+    theme(axis.ticks.x = element_blank(), 
+          axis.line.x = element_blank(),
+          legend.key = element_blank(),
+          legend.position = "none",
+          axis.text.y = element_blank(),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          panel.background = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          panel.grid.major.y = element_blank())
   ret
 }
