@@ -40,7 +40,6 @@ bar <- ggplot(df_bar) +
   geom_rect(aes(xmin = Start, xmax = End, ymin = -2, ymax = 2, fill = Event)) + 
   facet_wrap(~Sector, nrow = 6) +
   theme_minimal() +
-  scale_fill_brewer()
   scale_y_continuous(limits = c(-4, 4))
 
   
