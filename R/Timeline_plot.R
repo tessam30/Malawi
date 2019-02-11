@@ -1,4 +1,18 @@
+#######################################################%####
+#                                                          #
+####     Malawi Timeline Project                        ####
+#                                                          #
+##%######################################################%##
+
+# Purpose: Gather, reshape and plot basic time events and stats
+# Author: Tim Essam (code), Brent McCusker (data)
+# Date: 2019_02_02
+# Audience: Malawi Mission
+
+
 # Load timeline data, reshape and create sample plots
+
+# Load, injest and examine data -------------------------------------------
 
 library(tidyverse)
 library(rlang)
@@ -68,7 +82,7 @@ bar_long <- df_bar %>%
   select(Start, End, everything()) %>% 
   mutate(Start = ymd(Start),
          End = ymd(End)) %>%
-  gather(date_node, event_date, -c(Sector:Description2))%>%
+  gather(date_node, event_date, -c(Sector:Description2)) %>%
   arrange(date_node, event_date) %>%
   mutate(Event = fct_reorder(Event, event_date))
 
@@ -84,6 +98,7 @@ ggplot(aes(x = Event, y = event_date, colour = Sector)) +
   facet_wrap(~Sector, scales = "free") 
 
 
+# General line plot function ----------------------------------------------
 # General function to make line plots of individual indicators in case they are needed
 line_plot <- function(df, ...) {
   F <- quos(...)
@@ -99,7 +114,10 @@ line_plot <- function(df, ...) {
 df_line_long %>% split(.$Indicator) %>% 
   map(., ~line_plot(.))
 
-# population is just of MAlawi, so it will get a separate graph
+
+
+
+# population is just of Malawi, so it will get a separate graph
 line_plot(df_line_long, Indicator == "pop")
 
 line_p <- df_line_long %>% 
@@ -140,7 +158,7 @@ bar_p <- df_bar %>%
                  as.POSIXct("2020-01-01"), "10 years"),
     labels = date_format("%Y"),
     expand = c(0.05, 0.05),
-    limits = lims)
+    limits = lims) 
   
   
   
@@ -180,7 +198,7 @@ tst %>%
                 ymax = ind_max, 
                 fill = Event), 
             colour = "white") +
-  geom_line(aes(x = date, y = value))+
+  geom_line(aes(x = date, y = value)) +
   theme_minimal() +
   scale_fill_viridis_d(alpha = 0.25) +
   scale_x_datetime(
