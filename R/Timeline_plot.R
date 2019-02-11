@@ -7,6 +7,7 @@ library(readxl)
 library(gridExtra)
 library(RColorBrewer)
 library(scales)
+library(ggpubr)
 library(ggrepel)
 library(lubridate)
 library(llamar)
@@ -16,8 +17,10 @@ excel_path <- c("Excel")
 graph_path <- c("Graph")
 excel_sheets(file.path(excel_path, "Malawi TImelines.xlsx"))
 
-df_bar <- read_excel(file.path(excel_path, "Malawi TImelines.xlsx"), sheet = "Bar Data")
-df_line <- read_excel(file.path(excel_path, "Malawi TImelines.xlsx"), sheet = "Line Data")
+#df_bar <- read_excel(file.path(excel_path, "Malawi TImelines.xlsx"), sheet = "Bar Data")
+#df_line <- read_excel(file.path(excel_path, "Malawi TImelines.xlsx"), sheet = "Line Data")
+df_bar <- read_excel(file.path(excel_path, "Malawi TImelines_2019_02_11.xlsx"), sheet = "Bar Data")
+df_line <- read_excel(file.path(excel_path, "Malawi TImelines_2019_02_11.xlsx"), sheet = "Line Data")
 
 map(list(df_bar, df_line), str)
 
@@ -38,15 +41,20 @@ group_count <- function(df, ...) {
 # Mutate and plot ---------------------------------------------------------
 df_line_long <- 
   df_line %>% 
-  mutate(pop = pop/1e6) %>% 
-  gather(key = "indicator", value = "value", econ_growth:ag_pct_GDP) %>% 
-  mutate(country = "Malawi",
-         Sector = case_when(
-           indicator == "ag_pct_GDP" ~ "AG POLICY",
-           indicator == "econ_growth" ~ "PRESIDENT",
-           indicator == "pop_growth_rate" ~ "POLITICS",
-           TRUE ~ NA_character_
-         ))
+  select(date, everything()) %>% 
+  mutate(MW_pop = MW_pop/1e6) %>% 
+  gather(key = "indicator", value = "value", MW_econ_growth:MZ_ag_pct_GDP) %>% 
+  
+  # Use the 'extra' option within separate to keep indicator name together
+  separate(indicator, into = c("Country", "Indicator"), extra = "merge") %>%
+  mutate(Country = case_when(
+    Country == "MW" ~ "Malawi", 
+    Country == "ZB" ~ "Zambia",
+    Country == "MZ" ~ "Mozambique",
+    TRUE ~ NA_character_),
+  flag = ifelse(Country == "Malawi", 1, 0))
+  
+df_line_long %>% group_by(Country, Indicator) %>%  count() %>% arrange(Indicator)
 
 
 # Set break vector and limits so plots can be aligned
@@ -60,19 +68,20 @@ bar_long <- df_bar %>%
   select(Start, End, everything()) %>% 
   mutate(Start = ymd(Start),
          End = ymd(End)) %>%
-  gather(date_node, event_date, -c(Sector:ymax)) %>%
+  gather(date_node, event_date, -c(Sector:Description2))%>%
   arrange(date_node, event_date) %>%
   mutate(Event = fct_reorder(Event, event_date))
 
 #Where to put dotted lines
 bar_long %>% 
-ggplot(aes(x = Event, y = event_date, colour=Sector)) + 
-  geom_line(size=6) + 
-  guides(colour=guide_legend(title=NULL)) +
-  labs(x=NULL, y=NULL) + 
+  filter(Sector == "AG POLICY") %>% # Ag POLICY has 16 overlapping events
+ggplot(aes(x = Event, y = event_date, colour = Sector)) + 
+  geom_line(size = 6) + 
+  guides(colour = guide_legend(title = NULL)) +
+  labs(x = NULL, y = NULL) + 
   coord_flip() +
-  scale_y_date(date_breaks="10 years", labels=date_format("%b ‘%y")) +
-  facet_wrap(~Sector, scales = "free")
+  scale_y_date(date_breaks = "10 years", labels = date_format("%b ‘%y")) +
+  facet_wrap(~Sector, scales = "free") 
 
 
 # General function to make line plots of individual indicators in case they are needed
@@ -87,22 +96,28 @@ line_plot <- function(df, ...) {
     theme_minimal()
 }
 # Create plots of each indicator
-df_line_long %>% split(.$indicator) %>% 
+df_line_long %>% split(.$Indicator) %>% 
   map(., ~line_plot(.))
 
+# population is just of MAlawi, so it will get a separate graph
+line_plot(df_line_long, Indicator == "pop")
 
 line_p <- df_line_long %>% 
-  ggplot(aes(x = date, y = value)) +
-  geom_line(colour = grey50K) +
+  mutate(Country = fct_rev(Country)) %>% # Reversing order to Malawi is plotted last
+  ggplot(., aes(x = date, y = value, group = Country)) +
+  geom_line(aes(colour = Country)) +
   scale_x_datetime(
-    breaks = seq(as.POSIXct("1960-01-01"),
-                 as.POSIXct("2020-01-01"), "10 years"),
+    breaks = seq(as.POSIXct("1960-01-01"),as.POSIXct("2020-01-01"), "10 years"),
     limits = lims,
     labels = date_format("%Y")) +
-  facet_wrap(~indicator, nrow = 4, scales = "free") +
-  theme_minimal()
+  scale_color_manual(values = c(grey30K, grey30K, grey90K)) +
+  facet_wrap(~Indicator, nrow = 4, scales = "free") +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  labs(caption = "Source: USAID GeoCenter gathered facts and figures")
 
 
+# Bar plot of the events stacked - This will be combined w/ line graphs to form basis for graphic
 bar_p <- df_bar %>% 
   ggplot(.) + 
   geom_rect(aes(xmin = Start, 
@@ -112,10 +127,10 @@ bar_p <- df_bar %>%
                 fill = Sector), 
             colour = "white") + 
   facet_wrap(~Sector, nrow = 6) +
-  geom_text_repel(aes(x=Start + (End-Start)/2, 
-                      y = ymin +(ymax-ymin)/2, 
-                      label=Event_abbr), 
-                  size=3,
+  geom_text_repel(aes(x = Start + (End - Start)/2, 
+                      y = ymin + (ymax - ymin)/2, 
+                      label = Event_abbr), 
+                  size = 3,
                   point.padding = NA,
                   family = "Lato Light") +
   theme_timeline() +
@@ -132,12 +147,12 @@ bar_p <- df_bar %>%
                    
 # First iteration
 mwi_tl <- ggarrange(bar_p, line_p, nrow = 2,
-        align = "v") %>% annotate_figure(.,
-                                         top = text_grob("Malawi: Historical Events Summarized")) 
+        align = "v") %>% 
+  annotate_figure(., top = text_grob("Malawi: Historical Events Summarized"))  
 
-  ggsave(plot = mwi_tl, file.path(graph_path, "MWI_timeline.pdf"),
-                      dpi=300, width = 12, height = 18, units = "in",
-                      device = "pdf")
+  ggsave(file.path(graph_path, "MWI_timeline.pdf"), plot = mwi_tl,
+                      dpi = 300, width = 18, height = 12, units = "in",
+                      device = "pdf", scale = 2)
 
 # Makes more sense to align some of the events with the indicator data. First
 # let's align the economic events to the economic growth data
