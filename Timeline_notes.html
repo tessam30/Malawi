@@ -255,9 +255,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type="text/css">
 .main-container {
@@ -288,8 +286,6 @@ summary {
 </style>
 
 
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -364,14 +360,23 @@ $(document).ready(function () {
 
 
 
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
 
 <div class="fluid-row" id="header">
 
 
 
 <h1 class="title toc-ignore">Making Timelines</h1>
-<h4 class="author"><em>Tim Essam</em></h4>
-<h4 class="date"><em>2/8/2019</em></h4>
+<h4 class="author">Tim Essam</h4>
+<h4 class="date">2/8/2019</h4>
 
 </div>
 
@@ -383,12 +388,9 @@ $(document).ready(function () {
 <h3>Event Data</h3>
 <p>Brent started with a list of economic, political and climatic events that the Mission had identified. He then mocked up a timeline on the events, organized by different sectors. We ended up creating two datasets, one that captured the more qualitative events and one that captured indicator values across a similar time span.</p>
 <p>A snipped of each dataset is included below. Most of the columns are pretty self expanatory except, perhaps, the ymin and ymax column. These two columns are used to controld the height of the bar used in the timeline. -2 and 2 are just arbitrary numbers for now, but adding this field in the data allowed for overlapping events within sector. By varying the ymin and ymax, we could control how overlapping events were plotted. <strong>If you know you will have many overlapping events you may want to develop a standard methodlogy for addressing</strong>.</p>
-<pre class="r"><code>glimpse(df_bar)</code></pre>
 <pre><code>## Observations: 34
-## Variables: 10</code></pre>
-<pre><code>## Warning in as.POSIXlt.POSIXct(x, tz): unknown timezone 'zone/tz/2018i.1.0/
-## zoneinfo/America/New_York'</code></pre>
-<pre><code>## $ Sector       &lt;chr&gt; &quot;WEATHER&quot;, &quot;WEATHER&quot;, &quot;WEATHER&quot;, &quot;WEATHER&quot;, &quot;WEATHE…
+## Variables: 10
+## $ Sector       &lt;chr&gt; &quot;WEATHER&quot;, &quot;WEATHER&quot;, &quot;WEATHER&quot;, &quot;WEATHER&quot;, &quot;WEATHE…
 ## $ Event_abbr   &lt;chr&gt; &quot;ENSO&quot;, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
 ## $ Event        &lt;chr&gt; &quot;ENSO&quot;, &quot;ENSO&quot;, &quot;ENSO&quot;, &quot;ENSO&quot;, &quot;ENSO&quot;, &quot;ENSO&quot;, &quot;EN…
 ## $ Start        &lt;dttm&gt; 1965-01-01, 1969-01-01, 1973-01-01, 1976-01-01, 19…
@@ -412,7 +414,20 @@ $(document).ready(function () {
 ## 4        7.28 4262005            2.47       44.0 1967-01-01 00:00:00
 ## 5       -1.92 4370650            2.52       42.4 1968-01-01 00:00:00
 ## 6        5.88 4484439            2.57       41.7 1969-01-01 00:00:00</code></pre>
-<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
+<pre><code>## # A tibble: 216 x 5
+##    date                indicator     value country Sector   
+##    &lt;dttm&gt;              &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;    
+##  1 1964-01-01 00:00:00 econ_growth   2.66  Malawi  PRESIDENT
+##  2 1965-01-01 00:00:00 econ_growth  13.6   Malawi  PRESIDENT
+##  3 1966-01-01 00:00:00 econ_growth  13.2   Malawi  PRESIDENT
+##  4 1967-01-01 00:00:00 econ_growth   7.28  Malawi  PRESIDENT
+##  5 1968-01-01 00:00:00 econ_growth  -1.92  Malawi  PRESIDENT
+##  6 1969-01-01 00:00:00 econ_growth   5.88  Malawi  PRESIDENT
+##  7 1970-01-01 00:00:00 econ_growth   0.479 Malawi  PRESIDENT
+##  8 1971-01-01 00:00:00 econ_growth  16.2   Malawi  PRESIDENT
+##  9 1972-01-01 00:00:00 econ_growth   6.23  Malawi  PRESIDENT
+## 10 1973-01-01 00:00:00 econ_growth   2.30  Malawi  PRESIDENT
+## # … with 206 more rows</code></pre>
 </div>
 </div>
 
