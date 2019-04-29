@@ -125,9 +125,10 @@ line_p <- df_line_long %>%
   ggplot(., aes(x = date, y = value, group = Country)) +
   geom_line(aes(colour = Country)) +
   scale_x_datetime(
-    breaks = seq(as.POSIXct("1960-01-01"),as.POSIXct("2020-01-01"), "10 years"),
+    breaks = seq(as.POSIXct("1960-01-01"), as.POSIXct("2020-01-01"), "10 years"),
     limits = lims,
-    labels = date_format("%Y")) +
+    labels = date_format("%Y")
+    ) +
   scale_color_manual(values = c(grey30K, grey30K, grey90K)) +
   facet_wrap(~Indicator, nrow = 4, scales = "free") +
   theme_minimal() +
@@ -171,26 +172,29 @@ mwi_tl <- ggarrange(bar_p, line_p, nrow = 2,
   ggsave(file.path(graph_path, "MWI_timeline.pdf"), plot = mwi_tl,
                       dpi = 300, width = 18, height = 12, units = "in",
                       device = "pdf", scale = 2)
+  
+write_csv(df_bar, file.path("Data", "MWI_bar_graphdata.csv"))
+write_csv(df_line_long, file.path("Data", "MWI_line_graphdata.csv"))
 
 # Makes more sense to align some of the events with the indicator data. First
 # let's align the economic events to the economic growth data
 
-group_count(df_line_long, indicator)
+group_count(df_line_long, Indicator)
 
 tst <- df_line_long %>% 
-  left_join(., df_bar, by = c("date" = "Start", "Sector" = "Sector")) %>% 
+  left_join(., df_bar, by = c("date" = "Start", "Indicator" = "Sector")) %>% 
   # Fill in missing values so we can group by sector and replace min and max to match graph bounds
   fill(ymin, ymax) %>% 
-  group_by(indicator) %>% 
+  group_by(Indicator) %>% 
   mutate(ind_min = min(value), 
          ind_max = max(value)) %>% 
   ungroup()
 
 # Try overlaying the bar plot on the indicator plot
 tst %>% 
-  filter(indicator == "econ_growth") %>% 
-  mutate(ymin = min(indicator), 
-         ymax = max(indicator)) %>% 
+  filter(Indicator == "econ_growth") %>% 
+  mutate(ymin = min(Indicator), 
+         ymax = max(Indicator)) %>% 
   ggplot(.) + 
   geom_rect(aes(xmin = date, 
                 xmax = End, 
