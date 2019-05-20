@@ -9,6 +9,8 @@
 # Aborting attempt to work w/ final table and will begin reconstruction process
 # from the district data. 
 
+# Update: 2019_05_20 - read_excel names come in differently now, so modified code to reflect this.
+
 read_path <- file.path(datapath, "LAPA District councils Results.xlsx")
 
 # Here's the workflow we want
@@ -17,6 +19,8 @@ read_path <- file.path(datapath, "LAPA District councils Results.xlsx")
 # 3. use the sheet name in a purrr:map call to pass the name of the sheet to read
 # 4. then use the read_path to point to the original file source
 # 5. drop the TOTALS table as it's wrong, then clean up names and recalculate scores
+tmp <- read_excel(path = read_path, sheet = "Nkhatabay ")
+
 
 lapa_raw <- data_frame(sheetname = excel_sheets(read_path)) %>% 
   mutate(file_contents = map(sheetname, ~read_excel(path = read_path, sheet = .x))) %>% 
@@ -24,7 +28,7 @@ lapa_raw <- data_frame(sheetname = excel_sheets(read_path)) %>%
   unnest() %>% 
   
   # Drop empty cells because they provide no value
-  select(-(X__1:X__12), -(X__14:X__18)) %>%
+  select(-(...2:...13), -(...16:...20)) %>%
   rename(lapa_description = `DISTRICT COUNCIL PERFORMANCE ASSESSMENT AND MONITORING TOOL`,
          district = sheetname,
          score = `Consensus Score (CS)`) %>% 
@@ -42,10 +46,10 @@ lapa_raw <- data_frame(sheetname = excel_sheets(read_path)) %>%
   
   # Need a filter so we are not double counting scores for districts where two columns
   # have values (Dedza)
-  mutate(score_flag = ifelse(score == X__13 & !is.na(score) & score != 0, 1, 0),
+  mutate(score_flag = ifelse(score == ...15 & !is.na(score) & score != 0, 1, 0),
          lapa_score = case_when(
-           (score != X__13 & score_flag != 1) ~ rowSums(select(., score:X__13)),
-           (is.na(score)) ~ X__13,
+           (score != ...15 & score_flag != 1) ~ rowSums(select(., score:...15)),
+           (is.na(score)) ~ ...15,
            TRUE ~ score),
          lapa_score = replace_na(lapa_score, 0),
          lapa_area = ifelse(row_type == "key_perform", lapa_description, NA_character_ )) 
@@ -101,6 +105,12 @@ lapa_full_dist %>%
   scale_fill_viridis_c(direction = -1, option = "A")
   
   
+
+lapa_full_dist %>%
+  mutate(lapa_area_short = str_remove_all(lapa_area, "Key Performance Area")) %>% 
+  group_by(district, lapa_area, lapa_area_short, CID) %>% 
+  summarise(lapa_score = sum(lapa_score, na.rm = TRUE)) %>% 
+  mutate(dist_sort = fct_reorder(district, lapa_score)) %>% 
   left_join(., mwi_geo, by = c("CID")) %>% 
   ggplot() +
   geom_sf(aes(fill = lapa_score), colour = "white", size = 0.5) +
